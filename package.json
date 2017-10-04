@@ -1,0 +1,23 @@
+{
+  "name": "a3661440-project4",
+  "version": "1.0.0",
+  "description": "Board game project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node_modules/.bin/webpack"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jquery": "^3.2.13",
+    "@types/three": "^0.84.26",
+    "three": "^0.87.1",
+    "ts-loader": "^2.3.7",
+    "typescript": "^2.5.3",
+    "webpack": "^3.6.0"
+  },
+  "dependencies": {
+    "jquery": "^3.2.1"
+  }
+}
