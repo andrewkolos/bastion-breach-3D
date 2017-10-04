@@ -1,4 +1,3 @@
-import greeter = require('./greeter');
 import $ = require('jquery');
 import THREE = require('three');
 
