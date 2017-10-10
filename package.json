@@ -15,9 +15,11 @@
     "three": "^0.87.1",
     "ts-loader": "^2.3.7",
     "typescript": "^2.5.3",
+    "typescript-collections": "^1.2.5",
     "webpack": "^3.6.0"
   },
   "dependencies": {
-    "jquery": "^3.2.1"
+    "jquery": "^3.2.1",
+    "three-orbitcontrols-ts": "^0.1.2"
   }
 }

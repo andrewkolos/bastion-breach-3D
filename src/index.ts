@@ -1,7 +1,9 @@
 import $ = require('jquery');
 import THREE = require('three');
+import {Stage} from "./render";
 
 
 document.body.onload = () => {
-    console.log(new THREE.BoxGeometry(1,1,1));
+    let stage = new Stage();
+    setTimeout(() => stage.start(), 1000); // should find a way to not have to do this
 };
