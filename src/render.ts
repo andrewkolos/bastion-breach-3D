@@ -1,7 +1,7 @@
 import {ResourceManager} from "./resources";
-import THREE = require('three');
-import {OrbitControls} from 'three-orbitcontrols-ts';
-
+import * as THREE from 'three';
+import { OrbitControls } from "three-orbitcontrols-ts";
+import "./physijs.js";
 
 export class Stage {
 
@@ -20,6 +20,7 @@ export class Stage {
         this.initLights();
         this.initCamera();
         this.initRenderer();
+        console.log(this.camera);
         new OrbitControls(this.camera, this.renderer.domElement);
 
 

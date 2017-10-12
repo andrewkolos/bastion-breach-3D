@@ -4,6 +4,7 @@
   "description": "Board game project",
   "main": "index.js",
   "scripts": {
+    "start": "http-server dist -p 7000",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node_modules/.bin/webpack"
   },
@@ -12,14 +13,17 @@
   "devDependencies": {
     "@types/jquery": "^3.2.13",
     "@types/three": "^0.84.26",
-    "three": "^0.87.1",
+    "@types/physijs": "0.0.27",
+    "http-server": "^0.10.0",
     "ts-loader": "^2.3.7",
     "typescript": "^2.5.3",
-    "typescript-collections": "^1.2.5",
     "webpack": "^3.6.0"
   },
   "dependencies": {
     "jquery": "^3.2.1",
-    "three-orbitcontrols-ts": "^0.1.2"
+    "three": "^0.87.1",
+    "three-orbit-controls": "^82.1.0",
+    "three-orbitcontrols-ts": "^0.1.2",
+    "typescript-collections": "^1.2.5"
   }
 }

@@ -10,7 +10,10 @@ module.exports = {
         ]
     },
     resolve: {
-        extensions: [ ".tsx", ".ts", ".js" ]
+        extensions: [ ".tsx", ".ts", ".js" ],
+        alias: {
+            'three': path.resolve(path.join(__dirname, 'node_modules', 'three'))
+        }
     },
     output: {
         filename: 'bundle.js',
