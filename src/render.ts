@@ -14,7 +14,34 @@ export class Stage {
         this.resources = new ResourceManager(); // get resources ready
     }
 
-    start() {
+    init(): Promise<any> {
+        return new Promise(resolve => {
+
+            this.resources.loadResources().then(() => {
+                /* this.scene = new Physijs.Scene();
+                 this.scene.setGravity(new THREE.Vector3(0, -30, 0));*/
+                this.scene = new THREE.Scene();
+                this.initGameBoard();
+                this.initLights();
+                this.initCamera();
+                this.initRenderer();
+                new OrbitControls(this.camera, this.renderer.domElement);
+
+                resolve();
+            })
+        });
+    }
+
+    start = () => {
+        requestAnimationFrame(() => this.render());
+    };
+
+    render = () => {
+        requestAnimationFrame(() => this.render());
+        this.renderer.render(this.scene, this.camera);
+    };
+
+   /* start() {
         this.scene = new THREE.Scene();
         this.initGameBoard();
         this.initLights();
@@ -25,18 +52,16 @@ export class Stage {
 
 
         requestAnimationFrame(() => this.render());
-    }
+    }*/
 
-    protected render() {
-        requestAnimationFrame(() => this.render());
-        this.renderer.render(this.scene, this.camera);
-    }
+
 
     private initGameBoard() {
         let boardTexture = this.resources.boardTexture;
 
         let boardGeometry = new THREE.PlaneGeometry(1792 * 0.01, 1350 * 0.01);
-        let boardMaterial = new THREE.MeshPhongMaterial({map: boardTexture});
+        let boardMaterial = new THREE.MeshPhongMaterial();
+        boardMaterial.map = this.resources.boardTexture;
         boardMaterial.map.wrapS = boardMaterial.map.wrapT = THREE.RepeatWrapping;
 
         let boardMesh = new THREE.Mesh(boardGeometry, boardMaterial);
@@ -90,7 +115,7 @@ export class Stage {
         this.renderer = new THREE.WebGLRenderer({antialias: true});
         this.renderer.setClearColor(0x000000, 1.0);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.shadowMapEnabled = true;
+        this.renderer.shadowMap.enabled = true;
 
 
         window.addEventListener('resize', () => {
