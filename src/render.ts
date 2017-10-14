@@ -1,7 +1,9 @@
 import {ResourceManager} from "./resources";
 import * as THREE from 'three';
-import { OrbitControls } from "three-orbitcontrols-ts";
+import {OrbitControls} from "three-orbitcontrols-ts";
 import "./physijs.js";
+import {createTickWrapper} from "./util/tickwrapper";
+import {FACE, SUIT} from "./deck";
 
 export class Stage {
 
@@ -9,52 +11,44 @@ export class Stage {
     scene: THREE.Scene;
     renderer: THREE.WebGLRenderer;
     resources: ResourceManager;
+    rendering: boolean = false;
 
-    constructor() {
-        this.resources = new ResourceManager(); // get resources ready
+    constructor(resources: ResourceManager) {
+        this.resources = resources;
     }
 
-    init(): Promise<any> {
-        return new Promise(resolve => {
-
-            this.resources.loadResources().then(() => {
-                /* this.scene = new Physijs.Scene();
-                 this.scene.setGravity(new THREE.Vector3(0, -30, 0));*/
-                this.scene = new THREE.Scene();
-                this.initGameBoard();
-                this.initLights();
-                this.initCamera();
-                this.initRenderer();
-                new OrbitControls(this.camera, this.renderer.domElement);
-
-                resolve();
-            })
-        });
-    }
-
-    start = () => {
-        requestAnimationFrame(() => this.render());
-    };
-
-    render = () => {
-        requestAnimationFrame(() => this.render());
-        this.renderer.render(this.scene, this.camera);
-    };
-
-   /* start() {
+    init() {
+        /* this.scene = new Physijs.Scene();
+         this.scene.setGravity(new THREE.Vector3(0, -30, 0));*/
         this.scene = new THREE.Scene();
         this.initGameBoard();
         this.initLights();
         this.initCamera();
         this.initRenderer();
-        console.log(this.camera);
         new OrbitControls(this.camera, this.renderer.domElement);
+    }
 
-
+    start = () => {
+        this.rendering = true;
         requestAnimationFrame(() => this.render());
-    }*/
+    };
 
+    render = () => {
+        if (this.rendering) {
+            console.log('rendering');
+            requestAnimationFrame(() => this.render());
+            this.update();
+            this.renderer.render(this.scene, this.camera);
+        }
+    };
 
+    private update = createTickWrapper(60, () => {
+
+    });
+
+    stop() {
+        this.rendering = false;
+    }
 
     private initGameBoard() {
         let boardTexture = this.resources.boardTexture;
@@ -65,15 +59,15 @@ export class Stage {
         boardMaterial.map.wrapS = boardMaterial.map.wrapT = THREE.RepeatWrapping;
 
         let boardMesh = new THREE.Mesh(boardGeometry, boardMaterial);
-        boardMesh.rotation.x = - Math.PI / 2;
+        boardMesh.rotation.x = -Math.PI / 2;
         boardMesh.position.set(-10, 0, 0);
         this.scene.add(boardMesh);
 
-       /* let wireGeometry = new THREE.WireframeGeometry(new THREE.PlaneGeometry(100, 100, 1000, 1000));
-        let wireMaterial = new THREE.MeshBasicMaterial({color: 'green'});
-        let wire = new THREE.Mesh(wireGeometry, wireMaterial);
-        wire.position.set(0, 0, -10);
-        this.scene.add(wire);*/
+        /* let wireGeometry = new THREE.WireframeGeometry(new THREE.PlaneGeometry(100, 100, 1000, 1000));
+         let wireMaterial = new THREE.MeshBasicMaterial({color: 'green'});
+         let wire = new THREE.Mesh(wireGeometry, wireMaterial);
+         wire.position.set(0, 0, -10);
+         this.scene.add(wire);*/
 
         this.scene.add(new THREE.AxisHelper(5));
     }
@@ -108,7 +102,7 @@ export class Stage {
     private initCamera() {
         this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
         this.camera.position.set(0, 15, 0);
-        this.camera.lookAt(new THREE.Vector3(0,0,0));
+        this.camera.lookAt(new THREE.Vector3(0, 0, 0));
     }
 
     private initRenderer() {
@@ -125,6 +119,18 @@ export class Stage {
         });
 
         document.body.appendChild(this.renderer.domElement);
+    }
+}
+
+class CardObject extends THREE.Mesh {
+
+    constructor(resources: ResourceManager, suit: SUIT, face: FACE) {
+        let imageName = SUIT[suit] + "_of_" + FACE[face];
+
+        let geometry = new THREE.PlaneGeometry(500/500, 726/500);
+        //let material = new THREE.MeshPhongMaterial({map: resources.cardTextures[imageName]});
+
+        super();
     }
 
 }
