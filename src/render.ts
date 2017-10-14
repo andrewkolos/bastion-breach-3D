@@ -126,11 +126,10 @@ class CardObject extends THREE.Mesh {
 
     constructor(resources: ResourceManager, suit: SUIT, face: FACE) {
         let imageName = SUIT[suit] + "_of_" + FACE[face];
-
         let geometry = new THREE.PlaneGeometry(500/500, 726/500);
-        //let material = new THREE.MeshPhongMaterial({map: resources.cardTextures[imageName]});
+        let material = new THREE.MeshPhongMaterial({map: resources.cardTextures[imageName]});
 
-        super();
+        super(geometry, material);
     }
 
 }

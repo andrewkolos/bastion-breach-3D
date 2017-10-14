@@ -42,6 +42,7 @@ export class ResourceManager {
                     Promise.all(promises).then((values: any[]) => {
                         console.log(values);
                         values.forEach((value: [string, THREE.Texture]) => {
+                            value[0] = value[0].replace(".png", "");
                             mapping[value[0]] = value[1];
                         });
                         this.cardTextures = mapping;
