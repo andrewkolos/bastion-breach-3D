@@ -1,8 +1,8 @@
 // Provides a card type as well as a collection for them that simply wraps an array of them
 
-export enum SUIT {SPADES, CLUBS, HEARTS, DIAMONDS}
+export enum SUIT {SPADES=0, CLUBS, HEARTS, DIAMONDS}
 
-export enum FACE {ACE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NIN, TEN, JACK, QUEEN, KING}
+export enum FACE {ACE=0, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING}
 
 export class Card {
     constructor(public suit: SUIT, public face: FACE) {
@@ -17,7 +17,7 @@ export class Deck {
 
         for (let s in SUIT)
             for (let f in FACE)
-                if (Number(s) && Number(f))
+                if (!isNaN(Number(s)) && !isNaN(Number(f)))
                     this.cards.push(new Card(parseInt(s), parseInt(f)));
     }
 

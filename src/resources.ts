@@ -8,6 +8,9 @@ export class ResourceManager {
 
     boardTexture: THREE.Texture;
     cardTextures: Object;
+    cardBackTexture: THREE.Texture;
+    frontSideAlpha: THREE.Texture;
+    backSideAlpha: THREE.Texture;
 
     constructor() {
         this.textureLoader = new THREE.TextureLoader();
@@ -16,10 +19,15 @@ export class ResourceManager {
     loadResources = () => {
         return new Promise((resolve => {
             //console.log(ResourceManager.promisifyLoadingTexture(this.textureLoader,'images/board.png'));
-            let promises = [promisifyLoadingTexture(this.textureLoader, 'images/board.png'), this.cardPromise()];
+            let promises = [promisifyLoadingTexture(this.textureLoader, 'images/board.png'), this.cardPromise(), this.cardBackPromise(),
+                            promisifyLoadingTexture(this.textureLoader, 'images/card/frontside_alpha.png'),
+                            promisifyLoadingTexture(this.textureLoader, 'images/card/backside_alpha.png')];
             Promise.all(promises).then((values: any[]) => {
                 this.boardTexture = values[0][1];
-                //this.cardTextures = values[1];
+                this.cardTextures = values[1];
+                this.cardBackTexture = values[2];
+                this.frontSideAlpha = values[3][1];
+                this.backSideAlpha = values[4][1];
                 this.loaded = true;
                 resolve();
             })
@@ -40,18 +48,26 @@ export class ResourceManager {
                         promises.push(promisifyLoadingTexture(loader,dir + '/' + filename));
                     });
                     Promise.all(promises).then((values: any[]) => {
-                        console.log(values);
                         values.forEach((value: [string, THREE.Texture]) => {
-                            value[0] = value[0].replace(".png", "");
+                            let regex = /[^\\\/]+(?=\.[\w]+$)|[^\\\/]+$/g;
+                            value[0] = regex.exec(value[0])[0];
                             mapping[value[0]] = value[1];
                         });
-                        this.cardTextures = mapping;
                         resolve(mapping);
                     });
                 }
             });
         });
     };
+
+    cardBackPromise = () => {
+        let loader = this.textureLoader;
+        return new Promise<THREE.Texture>(resolve => {
+            loader.load('images/card/backside.png', texture => {
+                resolve(texture);
+            })
+        })
+    }
 }
 
 function promisifyLoadingTexture(loader, url: string) {
