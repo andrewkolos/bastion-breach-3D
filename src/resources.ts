@@ -60,7 +60,7 @@ export class ResourceManager {
                 success: function (data) {
                     $(data).find("a:contains(.png)").each((index, element) => {
                         let filename = (<HTMLAnchorElement>element).href.replace(window.location.host, "").replace("http:///", "");
-                        promises.push(promisifyLoadingTexture(loader, dir + '/' + filename));
+                        promises.push(promisifyLoadingTexture(loader, filename));
                     });
                     Promise.all(promises).then((values: any[]) => {
                         values.forEach((value: [string, THREE.Texture]) => {

@@ -4,6 +4,9 @@ export enum SUIT {SPADES=0, CLUBS, HEARTS, DIAMONDS}
 
 export enum FACE {ACE=0, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING}
 
+export let NUMERICAL: Array<FACE> = [FACE.TWO, FACE.THREE, FACE.FOUR, FACE.FIVE, FACE.SIX, FACE.SEVEN, FACE.EIGHT, FACE.NINE, FACE.TEN];
+export let ROYALTY: Array<FACE> = [FACE.JACK, FACE.QUEEN, FACE.KING];
+
 export class Card {
     constructor(public suit: SUIT, public face: FACE) {
     }
