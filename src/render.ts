@@ -1,6 +1,7 @@
 import {ResourceManager} from "./resources";
 import * as THREE from 'three';
 import "./physijs.js";
+import {OrbitControls} from "three-orbitcontrols-ts"
 import {Card, Deck, FACE, NUMERICAL, ROYALTY, SUIT} from "./deck";
 import {AxisHelper, Intersection, Object3D} from "three";
 import * as $ from 'jquery';
@@ -46,6 +47,7 @@ export class Stage {
 
         window.addEventListener('mousemove', this.mousemove, false);
         window.addEventListener('mouseup', this.mouseup, false);
+
     }
 
     private mousemove = (e) => {
@@ -358,7 +360,56 @@ export class Stage {
             }).start();
     }
 
+    private createOObject(): THREE.Object3D {
+        let geometry = new THREE.RingGeometry(0.25, 0.5, 32, 32);
+        let material = new THREE.MeshPhongMaterial({color: 'red', transparent: true, opacity: 0.5});
+        let mesh = new THREE.Mesh(geometry, material);
+        mesh.name = "O";
+        mesh.lookAt(this.camera.position);
 
+        return mesh;
+    }
+
+    private createXObject(): THREE.Object3D {
+        let geometry = new THREE.PlaneGeometry(0.2, 1);
+        let material = new THREE.MeshPhongMaterial({color: 'blue', transparent: true, opacity:0.5});
+        let mesh = new THREE.Mesh(geometry, material);
+        mesh.rotation.set(0,0, Math.PI / 4);
+        let otherHalf = mesh.clone();
+        otherHalf.rotation.set(0, 0, -Math.PI/4);
+
+        let obj = new THREE.Object3D();
+        obj.add(mesh);
+        obj.add(otherHalf);
+        obj.name = "X";
+        obj.lookAt(this.camera.position);
+        return obj;
+    }
+
+    private createSquareObject(): THREE.Object3D {
+        let geometry  = new THREE.PlaneGeometry(0.2, 1);
+        let material = new THREE.MeshPhongMaterial({color: 'green', transparent: true, opacity: 0.5});
+        let left = new THREE.Mesh(geometry, material);
+        left.position.set(-0.4, 0, 0);
+        let top = left.clone();
+        top.position.set(0, 0.4, 0);
+        top.rotation.set(0 ,0,Math.PI/2);
+        let right = left.clone();
+        right.position.set(0.4, 0, 0);
+        let bottom = left.clone();
+        bottom.rotation.set(0,0,Math.PI/2);
+        bottom.position.set(0, -0.4, 0);
+
+        let obj = new THREE.Object3D();
+        obj.add(left);
+        obj.add(bottom);
+        obj.add(right);
+        obj.add(top);
+        obj.name = "square";
+        obj.lookAt(this.camera.position);
+
+        return obj;
+    }
 }
 
 // really wanted to make this an extension of Map<Card, Object3D> but had to make it a wrapper
