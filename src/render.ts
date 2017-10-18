@@ -41,7 +41,7 @@ export class Stage {
         this.initRenderer();
         this.createCards(SUIT.CLUBS, SUIT.DIAMONDS, SUIT.HEARTS);
         //new OrbitControls(this.camera, this.renderer.domElement);
-        this.scene.add(new AxisHelper(3));
+        /*this.scene.add(new AxisHelper(3));*/
         this.initTableObject();
         this.initGround();
 
@@ -57,6 +57,57 @@ export class Stage {
 
     private mouseup = (e) => {
         let determineWinner = (player: Card, computer: Card, neutral: Card) => {
+
+            /*
+            if(player == computer) return Result.Tie
+
+            def winner(a: Card, b: Card): Option[Card] = Seq(a, b).sorted.distinct match {
+                case Seq(a) => None
+                case Seq(a, b) => Some(a)
+            }
+
+            Seq(player, computer, neutral).sorted.distinct  match {
+                case `neutral` => Result.Tie
+                case `player` => Result.Player
+                case `computer` => Result.Computer
+            }
+             */
+            /*let winner = (a: Card, b: Card) => {
+                let royalA = ROYALTY.indexOf(a.face);
+                let numA = NUMERICAL.indexOf(a.face);
+                let royalB = ROYALTY.indexOf(b.face);
+                let numB = NUMERICAL.indexOf(b.face);
+                if(a.face === FACE.ACE) {
+                    if(b.face === FACE.ACE) return null;
+                    if(royalB > -1) return a;
+                    return b;
+                }
+                if(royalA > -1) {
+                    if(b.face === FACE.ACE) return b;
+                    if(royalB > -1) {
+                        if(royalA > royalB) return a;
+                        if(royalB > royalA) return b;
+                        return null;
+                    }
+                    return a;
+                }
+                if(b.face === FACE.ACE) return b;
+                if(royalB > -1) return b;
+                if(numA > numB) return a;
+                if(numB > numA) return b;
+                return null;
+            };
+
+            let player2neutral = winner(player, neutral);
+            let computer2neutral = winner(computer, neutral);
+            let player2computer = winner(player, computer);
+
+            if(player2neutral === player && player2computer === player) return player;
+            if(player2neutral === player && player2computer === computer) return neutral;
+            if(player2neutral === player && player2computer === null) return player;
+            if(player2neutral === player) return neutral;
+            if(player2neutral ===)*/
+
             // handle someone having ace
             if (player.face === FACE.ACE) {
                 if (NUMERICAL.indexOf(neutral.face) > -1) {
@@ -68,7 +119,7 @@ export class Stage {
                     if (ROYALTY.indexOf(computer.face) > -1)
                         return neutral;
                 }
-                if (ROYALTY.indexOf(neutral.face) >-1) {
+                if (ROYALTY.indexOf(neutral.face) > -1) {
                     if (NUMERICAL.indexOf(computer.face) > -1)
                         return neutral;
                     if (ROYALTY.indexOf(computer.face) > -1)
@@ -89,7 +140,7 @@ export class Stage {
                     if (ROYALTY.indexOf(player.face) > -1)
                         return neutral;
                 }
-                if (ROYALTY.indexOf(neutral.face) >-1) {
+                if (ROYALTY.indexOf(neutral.face) > -1) {
                     if (NUMERICAL.indexOf(player.face) > -1)
                         return neutral;
                     if (ROYALTY.indexOf(player.face) > -1)
@@ -100,6 +151,30 @@ export class Stage {
                     return neutral;
             }
 
+            if (neutral.face === FACE.ACE) {
+                if (NUMERICAL.indexOf(player.face) > -1) {
+                    if (NUMERICAL.indexOf(computer.face) > -1) {
+                        if (player.face > computer.face)
+                            return player;
+                        else if (computer.face > player.face)
+                            return computer;
+                        return neutral;
+                    }
+                    if (ROYALTY.indexOf(computer.face) > -1) {
+                        if (NUMERICAL.indexOf(computer.face) > -1)
+                            return neutral;
+                    }
+                }
+                if (ROYALTY.indexOf(player.face) > -1) {
+                    if (NUMERICAL.indexOf(computer.face) > -1)
+                        return computer;
+                    if (ROYALTY.indexOf(computer.face) > -1)
+                        return neutral;
+                }
+
+                if (player.face == FACE.ACE)
+                    return neutral;
+            }
 
             if (player.face > computer.face && player.face > neutral.face) {
                 return player;
@@ -137,24 +212,48 @@ export class Stage {
 
             ///
 
-            setTimeout(() => this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Euler(-Math.PI/2), 300, 300), 1220);
-            setTimeout(() => this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0,-1,0)), playerObject.rotation, 300, 0), 1540);
+            setTimeout(() => this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Euler(-Math.PI / 2), 300, 300), 1220);
+            setTimeout(() => this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0, -1, 0)), playerObject.rotation, 300, 0), 1540);
 
-            setTimeout(() => this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Euler(-Math.PI/2), 300, 300), 1220);
-            setTimeout(() => this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0,-1,0)), opponentObject.rotation, 300, 0), 1540);
+            setTimeout(() => this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Euler(-Math.PI / 2), 300, 300), 1220);
+            setTimeout(() => this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, -1, 0)), opponentObject.rotation, 300, 0), 1540);
 
             ///
 
             let currentNeutralCard = this.neutralBoard.getCard(currentNeutralObject);
 
             let winner = determineWinner(playerCard, opponentCard, currentNeutralCard);
+            let placeIndicator = (object: THREE.Object3D) => {
+                object.position.copy(currentNeutralObject.position.clone().add(new THREE.Vector3(0, 0.02, 0)));
+                object.rotation.set(-Math.PI / 2, 0, 0);
+                this.scene.add(object);
+                let opacity = {value: 0};
+                new TWEEN.Tween(opacity).to({value: 0.9}, 700)
+                    .easing(TWEEN.Easing.Cubic.Out)
+                    .onUpdate(function () {
+                        if (object instanceof THREE.Mesh) { // circle
+                            (<any>object).material.opacity = opacity.value;
+                        }
+                        object.children.forEach((c) => { // square or cross
+                            (<any>c).material.opacity = opacity.value;
+                        })
+                    }).start();
+            };
             if (winner === playerCard) {
-                console.log('player wins');
+                setTimeout(() => {
+                    placeIndicator(this.createOObject());
+                }, 1740);
             }
             else if (winner === opponentCard) {
-                console.log('opponent wins');
+                setTimeout(() => {
+                    placeIndicator(this.createXObject());
+                }, 1740);
             }
-            else console.log('tie');
+            else {
+                setTimeout(() => {
+                    placeIndicator(this.createSquareObject());
+                }, 1740);
+            }
 
         }
     };
@@ -224,8 +323,8 @@ export class Stage {
         dirLight2.shadow.mapSize.width = 1024 * 2;
         dirLight2.shadow.mapSize.height = 1024 * 2;
         this.scene.add(dirLight2);
-        this.scene.add(new THREE.CameraHelper(dirLight2.shadow.camera));
-        this.scene.add(new THREE.DirectionalLightHelper(dirLight2));
+        /*this.scene.add(new THREE.CameraHelper(dirLight2.shadow.camera));
+        this.scene.add(new THREE.DirectionalLightHelper(dirLight2));*/
 
         let hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3);
         hemiLight.color.setHSL(0.6, 1, 0.6);
@@ -236,9 +335,9 @@ export class Stage {
         let ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
         this.scene.add(ambientLight);
 
-        this.scene.add(new THREE.DirectionalLightHelper(dirLight1));
+        /*this.scene.add(new THREE.DirectionalLightHelper(dirLight1));
 
-        this.scene.add(new THREE.CameraHelper(dirLight1.shadow.camera));
+        this.scene.add(new THREE.CameraHelper(dirLight1.shadow.camera));*/
 
     }
 
@@ -269,7 +368,6 @@ export class Stage {
         let applyTexture = (obj) => {
             obj.receiveShadow = true;
             if (obj instanceof THREE.Mesh) {
-                console.log('jojjing');
                 (<THREE.MeshPhongMaterial>obj.material).map = this.resources.woodTexture;
             }
             if (obj instanceof THREE.Object3D)
@@ -286,7 +384,7 @@ export class Stage {
     }
 
     private initGround() {
-        let geometry = new THREE.PlaneGeometry(100, 100);
+        let geometry = new THREE.PlaneGeometry(120, 120);
         let material = new THREE.MeshPhongMaterial({map: this.resources.grassTexture});
         let mesh = new THREE.Mesh(geometry, material);
         mesh.rotateX(-Math.PI / 2);
@@ -362,7 +460,12 @@ export class Stage {
 
     private createOObject(): THREE.Object3D {
         let geometry = new THREE.RingGeometry(0.25, 0.5, 32, 32);
-        let material = new THREE.MeshPhongMaterial({color: 'red', transparent: true, opacity: 0.5});
+        let material = new THREE.MeshPhongMaterial({
+            color: 'red',
+            transparent: true,
+            opacity: 0.5,
+            side: THREE.DoubleSide
+        });
         let mesh = new THREE.Mesh(geometry, material);
         mesh.name = "O";
         mesh.lookAt(this.camera.position);
@@ -372,11 +475,16 @@ export class Stage {
 
     private createXObject(): THREE.Object3D {
         let geometry = new THREE.PlaneGeometry(0.2, 1);
-        let material = new THREE.MeshPhongMaterial({color: 'blue', transparent: true, opacity:0.5});
+        let material = new THREE.MeshPhongMaterial({
+            color: 'blue',
+            transparent: true,
+            opacity: 0.5,
+            side: THREE.DoubleSide
+        });
         let mesh = new THREE.Mesh(geometry, material);
-        mesh.rotation.set(0,0, Math.PI / 4);
+        mesh.rotation.set(0, 0, Math.PI / 4);
         let otherHalf = mesh.clone();
-        otherHalf.rotation.set(0, 0, -Math.PI/4);
+        otherHalf.rotation.set(0, 0, -Math.PI / 4);
 
         let obj = new THREE.Object3D();
         obj.add(mesh);
@@ -387,17 +495,22 @@ export class Stage {
     }
 
     private createSquareObject(): THREE.Object3D {
-        let geometry  = new THREE.PlaneGeometry(0.2, 1);
-        let material = new THREE.MeshPhongMaterial({color: 'green', transparent: true, opacity: 0.5});
+        let geometry = new THREE.PlaneGeometry(0.2, 1);
+        let material = new THREE.MeshPhongMaterial({
+            color: 'green',
+            transparent: true,
+            opacity: 0.5,
+            side: THREE.DoubleSide
+        });
         let left = new THREE.Mesh(geometry, material);
         left.position.set(-0.4, 0, 0);
         let top = left.clone();
         top.position.set(0, 0.4, 0);
-        top.rotation.set(0 ,0,Math.PI/2);
+        top.rotation.set(0, 0, Math.PI / 2);
         let right = left.clone();
         right.position.set(0.4, 0, 0);
         let bottom = left.clone();
-        bottom.rotation.set(0,0,Math.PI/2);
+        bottom.rotation.set(0, 0, Math.PI / 2);
         bottom.position.set(0, -0.4, 0);
 
         let obj = new THREE.Object3D();
@@ -407,6 +520,7 @@ export class Stage {
         obj.add(top);
         obj.name = "square";
         obj.lookAt(this.camera.position);
+        obj.scale.set(0.9,0.9,0.9);
 
         return obj;
     }
