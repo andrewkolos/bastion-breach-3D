@@ -11,9 +11,7 @@ document.body.onload = () => {
     resources.loadResources().then(() => {
         stage = new Stage(resources);
         stage.init();
-        console.log('initied');
         stage.start();
-        console.log('started');
     });
 
     $('#resetButton').click(() => {

@@ -36,6 +36,7 @@ export class Stage {
     cardFlipSound = new Sound(new Audio('sound/cardflip.mp3'), 10);
     drawCardSound = new Sound(new Audio('sound/drawcard.mp3'),10);
     youLoseSound = new Audio('sound/youlose.mp3');
+    musicSound = new Audio('sound/quadproquo.mp3');
 
     firstClickFlag = true;
     indicatorTimeouts = [];
@@ -44,6 +45,14 @@ export class Stage {
         this.resources = resources;
         this.cardFlipSound.setVolume(0.4);
         this.youLoseSound.volume = 0.15;
+        this.musicSound.volume = 0.2;
+        this.musicSound.addEventListener('timeupdate', () => {
+            let buffer = .20;
+            if(this.musicSound.currentTime > this.musicSound.duration - buffer) {
+                this.musicSound.currentTime = 0;
+                this.musicSound.play();
+                }
+            }, false);
     }
 
     public resetGame() {
@@ -95,6 +104,7 @@ export class Stage {
 
         window.addEventListener('mousemove', this.mousemove, false);
         window.addEventListener('mouseup', this.mouseup, false);
+        this.musicSound.play();
 
     }
 
@@ -487,7 +497,7 @@ export class Stage {
         Array.from(this.neutralBoard.objects()).forEach(v => this.scene.add(v));
         Array.from(this.computerHand.objects()).forEach(v => this.scene.add(v));
 
-        this.dealCards(Array.from(this.playerHand.objects()), new THREE.Vector3(0, 0.4, 3), new THREE.Vector3(-.2, .01, 0), new THREE.Euler(-Math.PI / 2.8, 0, 0), 1000, 1500);
+        this.dealCards(Array.from(this.playerHand.objects()), new THREE.Vector3(0, 0.4, 3), new THREE.Vector3(-.2, .01, 0), new THREE.Euler(-Math.PI / 2.8, 0, 0), 1000, 1000);
         this.dealCards(Array.from(this.neutralBoard.objects()), new THREE.Vector3(0, 0, 0), new THREE.Vector3(0.1, 0, 0), new THREE.Euler(-Math.PI / 2, 0, 0), 1000, 1);
         this.dealCards(Array.from(this.computerHand.objects()), new THREE.Vector3(0, 0, -3), new THREE.Vector3(0.1, 0, 0), new THREE.Euler(Math.PI / 2, 0, 0), 1000, 1);
     }

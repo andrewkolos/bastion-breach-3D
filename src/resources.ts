@@ -15,7 +15,6 @@ export class ResourceManager {
     grassTexture: THREE.Texture;
     table: THREE.Object3D;
 
-    textureLoaded: Function;
 
     constructor() {
         this.textureLoader = new THREE.TextureLoader();
@@ -46,6 +45,7 @@ export class ResourceManager {
                 this.grassTexture.wrapS = this.grassTexture.wrapT = THREE.RepeatWrapping;
                 this.table = values[7];
                 this.loaded = true;
+
                 resolve();
             })
         }));
