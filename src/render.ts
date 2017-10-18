@@ -5,6 +5,7 @@ import {OrbitControls} from "three-orbitcontrols-ts"
 import {Card, Deck, FACE, NUMERICAL, ROYALTY, SUIT} from "./deck";
 import {AxisHelper, Intersection, Object3D} from "three";
 import * as $ from 'jquery';
+import {Sound} from "./sounds";
 
 declare let TWEEN: any;
 
@@ -27,8 +28,16 @@ export class Stage {
     computerHand: PhysicalDeck;
     computerBoard: PhysicalDeck;
 
+    playerScore = 0;
+    computerScore = 0;
+    nextScore = 1;
+
+    cardFlipSound = new Sound(new Audio('sound/cardflip.mp3'), 10);
+    drawCardSound = new Sound(new Audio('sound/drawcard.mp3'),10);
+
     constructor(resources: ResourceManager) {
         this.resources = resources;
+        this.cardFlipSound.setVolume(0.4);
     }
 
     init() {
@@ -55,6 +64,7 @@ export class Stage {
         this.mouseVector.y = 2 * -(e.clientY / window.innerHeight) + 1;
     };
 
+    firstClickFlag = true;
     private mouseup = (e) => {
         let determineWinner = (player: Card, computer: Card, neutral: Card) => {
 
@@ -167,7 +177,7 @@ export class Stage {
                 }
                 if (ROYALTY.indexOf(player.face) > -1) {
                     if (NUMERICAL.indexOf(computer.face) > -1)
-                        return computer;
+                        return neutral;
                     if (ROYALTY.indexOf(computer.face) > -1)
                         return neutral;
                 }
@@ -188,23 +198,27 @@ export class Stage {
 
         let playerObject = this.selectedCard;
         if (playerObject) {
-            TWEEN.update(10000);
+            if (this.firstClickFlag) {
+                this.firstClickFlag = false;
+                TWEEN.update(10000);
+            }
+            this.drawCardSound.play();
 
             let neutralEntries = this.neutralBoard.objects();
             let currentNeutralObject = neutralEntries[this.playerBoard.size()];
             this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0, 0.3, -1)), playerObject.rotation, 200, 0);
-            setTimeout(() => this.moveCard(playerObject, currentNeutralObject.position.clone().add(new THREE.Vector3(0, 0, (726 / 500) + 0.02)), new THREE.Euler(Math.PI / 2, 0, 0), 1000, 300), 220);
+            setTimeout(() => this.moveCard(playerObject, currentNeutralObject.position.clone().add(new THREE.Vector3(0, 0, (726 / 500) + 0.02)), new THREE.Euler(Math.PI / 2, 0, 0), 1000, 300), 230);
 
             let playerCard = this.playerHand.getCard(playerObject);
             this.playerHand.deleteByObject(playerObject);
             this.playerBoard.set(playerCard, playerObject);
-            this.dealCards(Array.from(this.playerHand.objects()), new THREE.Vector3(0, 0.4, 3), new THREE.Vector3(-.2, .01, 0), new THREE.Euler(-Math.PI / 3, 0, 0), 300, 1);
+            this.dealCards(Array.from(this.playerHand.objects()), new THREE.Vector3(0, 0.4, 3), new THREE.Vector3(-.2, .01, 0), new THREE.Euler(-Math.PI / 2.8, 0, 0), 300, 1);
 
             ///
 
             let opponentObject = this.computerHand.objects()[Math.floor(Math.random() * this.computerHand.size())]; // get random opponent card
             this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, 0.5, 0)), new THREE.Euler(Math.PI / 2, 0, 0), 200, 0);
-            setTimeout(() => this.moveCard(opponentObject, currentNeutralObject.position.clone().add(new THREE.Vector3(0, 0, -(726 / 500) - 0.02)), new THREE.Euler(Math.PI / 2, 0, 0), 1000, 1000), 220);
+            setTimeout(() => this.moveCard(opponentObject, currentNeutralObject.position.clone().add(new THREE.Vector3(0, 0, -(726 / 500) - 0.02)), new THREE.Euler(Math.PI / 2, 0, 0), 1000, 1000), 230);
             let opponentCard = this.computerHand.getCard(opponentObject);
             this.computerHand.deleteByObject(opponentObject);
             this.computerBoard.set(opponentCard, opponentObject);
@@ -212,11 +226,13 @@ export class Stage {
 
             ///
 
-            setTimeout(() => this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Euler(-Math.PI / 2), 300, 300), 1220);
-            setTimeout(() => this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0, -1, 0)), playerObject.rotation, 300, 0), 1540);
+            setTimeout(() => this.cardFlipSound.play(), 1230);
 
-            setTimeout(() => this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Euler(-Math.PI / 2), 300, 300), 1220);
-            setTimeout(() => this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, -1, 0)), opponentObject.rotation, 300, 0), 1540);
+            setTimeout(() => this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Euler(-Math.PI / 2), 200, 200), 1230);
+            setTimeout(() => this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0, -1, 0)), playerObject.rotation, 100, 0), 1460);
+
+            setTimeout(() => this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Euler(-Math.PI / 2), 200, 200), 1230);
+            setTimeout(() => this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, -1, 0)), opponentObject.rotation, 200, 0), 1460);
 
             ///
 
@@ -242,19 +258,33 @@ export class Stage {
             if (winner === playerCard) {
                 setTimeout(() => {
                     placeIndicator(this.createOObject());
-                }, 1740);
+                }, 1640);
+                this.playerScore += this.nextScore;
+                this.nextScore = 1;
             }
             else if (winner === opponentCard) {
                 setTimeout(() => {
                     placeIndicator(this.createXObject());
-                }, 1740);
+                }, 1640);
+                this.computerScore += this.nextScore;
+                this.nextScore = 1;
             }
             else {
                 setTimeout(() => {
                     placeIndicator(this.createSquareObject());
-                }, 1740);
+                }, 1640);
+                this.nextScore +=1;
             }
 
+            if (this.playerHand.size() === 0) {
+                if (this.computerScore > this.playerScore)
+                    console.log('computer winner');
+                else if (this.playerScore > this.computerScore)
+                    console.log('player winner');
+                else {
+                    console.log('tie game');
+                }
+            }
         }
     };
 
@@ -282,14 +312,11 @@ export class Stage {
         this.selectedCard = null;
 
         if (intersections.length > 0) {
+            let card = intersections[0].object.parent;
+            this.selectedCard = card;
             $('body').css('cursor', 'pointer');
         } else {
             $('body').css('cursor', 'default');
-        }
-
-        for (let intersection of intersections) {
-            let card = intersection.object.parent;
-            this.selectedCard = card;
         }
     };
 
@@ -343,7 +370,7 @@ export class Stage {
 
     private initCamera() {
         this.camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 10000);
-        this.camera.position.set(0, 5.5, 5);
+        this.camera.position.set(0, 5.6, 4);
         this.camera.lookAt(new THREE.Vector3(0, 0, 0));
     }
 
@@ -423,11 +450,10 @@ export class Stage {
         Array.from(this.neutralBoard.objects()).forEach(v => this.scene.add(v));
         Array.from(this.computerHand.objects()).forEach(v => this.scene.add(v));
 
-        this.dealCards(Array.from(this.playerHand.objects()), new THREE.Vector3(0, 0.4, 3), new THREE.Vector3(-.2, .01, 0), new THREE.Euler(-Math.PI / 3, 0, 0), 1000, 3000);
+        this.dealCards(Array.from(this.playerHand.objects()), new THREE.Vector3(0, 0.4, 3), new THREE.Vector3(-.2, .01, 0), new THREE.Euler(-Math.PI / 2.8, 0, 0), 1000, 1500);
         this.dealCards(Array.from(this.neutralBoard.objects()), new THREE.Vector3(0, 0, 0), new THREE.Vector3(0.1, 0, 0), new THREE.Euler(-Math.PI / 2, 0, 0), 1000, 1);
         this.dealCards(Array.from(this.computerHand.objects()), new THREE.Vector3(0, 0, -3), new THREE.Vector3(0.1, 0, 0), new THREE.Euler(Math.PI / 2, 0, 0), 1000, 1);
     }
-
 
     private dealCards(cards: THREE.Object3D[], pos: THREE.Vector3, padding: THREE.Vector3, rot: THREE.Euler, posDuration: number, rotDuration: number) {
 
@@ -526,8 +552,6 @@ export class Stage {
     }
 }
 
-// really wanted to make this an extension of Map<Card, Object3D> but had to make it a wrapper
-// see here https://github.com/Microsoft/TypeScript/issues/10853
 class PhysicalDeck {
 
     private map: Map<Card, Object3D>;
