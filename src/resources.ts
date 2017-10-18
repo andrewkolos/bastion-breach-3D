@@ -15,6 +15,8 @@ export class ResourceManager {
     grassTexture: THREE.Texture;
     table: THREE.Object3D;
 
+    textureLoaded: Function;
+
     constructor() {
         this.textureLoader = new THREE.TextureLoader();
     }

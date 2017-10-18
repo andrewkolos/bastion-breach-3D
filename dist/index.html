@@ -2,10 +2,68 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Bastion Breach</title>
+
+    <style type="text/css">
+
+        body {
+            font-family: Arial;
+        }
+
+        #resetButton {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 5px 5px 0 5px;
+            padding: 10px 10px 10px 10px;
+            text-align: center;
+            font-size: 1.5em;
+            color: white;
+
+        }
+
+        .noSelect {
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE10+/Edge */
+            user-select: none; /* Standard */
+            cursor: pointer;
+        }
+
+        #modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            padding: 20px;
+            color: white;
+
+            transform: translate(-50%, -50%);
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 5px;
+        }
+
+        #modal .heading {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body style="margin: 0">
 <script type="text/javascript" src="Tween.js"></script>
 <script type="text/javascript" src="bundle.js"></script>
+
+<div id="modal" class="noSelect">
+    <div class="heading">
+        <h1>Bastion Breach</h1>
+    </div>
+    <div id="clickToPlay">
+        Loading...
+    </div>
+</div>
+<div id="resetButton" class="noSelect">
+    Reset
+</div>
+
 </body>
 </html>

@@ -27,6 +27,7 @@ export class Stage {
     neutralBoard: PhysicalDeck;
     computerHand: PhysicalDeck;
     computerBoard: PhysicalDeck;
+    indicators = new Array<THREE.Object3D>();
 
     playerScore = 0;
     computerScore = 0;
@@ -34,10 +35,48 @@ export class Stage {
 
     cardFlipSound = new Sound(new Audio('sound/cardflip.mp3'), 10);
     drawCardSound = new Sound(new Audio('sound/drawcard.mp3'),10);
+    youLoseSound = new Audio('sound/youlose.mp3');
+
+    firstClickFlag = true;
+    indicatorTimeouts = [];
 
     constructor(resources: ResourceManager) {
         this.resources = resources;
         this.cardFlipSound.setVolume(0.4);
+        this.youLoseSound.volume = 0.15;
+    }
+
+    public resetGame() {
+        let disposeDeck = (deck: PhysicalDeck) => {
+            deck.objects().forEach((o) => {
+                o.children.forEach((c) => {
+                    if (c instanceof THREE.Mesh) {
+                        let m = <any>c;
+                        m.material.dispose();
+                        m.geometry.dispose();
+                    }
+                    this.scene.remove(o);
+                })
+            });
+            deck.clear();
+        };
+
+        disposeDeck(this.playerHand);
+        disposeDeck(this.computerHand);
+        disposeDeck(this.neutralBoard);
+        disposeDeck(this.playerBoard);
+        disposeDeck(this.computerBoard);
+
+        this.indicators.forEach(i => this.scene.remove(i));
+
+        this.playerScore = 0;
+        this.computerScore = 0;
+        this.nextScore = 1;
+
+        this.firstClickFlag = true;
+        this.indicatorTimeouts.forEach(t=>clearTimeout(t));
+
+        this.createCards(SUIT.CLUBS, SUIT.DIAMONDS, SUIT.HEARTS);
     }
 
     init() {
@@ -64,7 +103,7 @@ export class Stage {
         this.mouseVector.y = 2 * -(e.clientY / window.innerHeight) + 1;
     };
 
-    firstClickFlag = true;
+
     private mouseup = (e) => {
         let determineWinner = (player: Card, computer: Card, neutral: Card) => {
 
@@ -200,7 +239,7 @@ export class Stage {
         if (playerObject) {
             if (this.firstClickFlag) {
                 this.firstClickFlag = false;
-                TWEEN.update(10000);
+                TWEEN.update(20000);
             }
             this.drawCardSound.play();
 
@@ -256,29 +295,29 @@ export class Stage {
                     }).start();
             };
             if (winner === playerCard) {
-                setTimeout(() => {
+                this.indicatorTimeouts.push(setTimeout(() => {
                     placeIndicator(this.createOObject());
-                }, 1640);
+                }, 1640));
                 this.playerScore += this.nextScore;
                 this.nextScore = 1;
             }
             else if (winner === opponentCard) {
-                setTimeout(() => {
+                this.indicatorTimeouts.push(setTimeout(() => {
                     placeIndicator(this.createXObject());
-                }, 1640);
+                }, 1640));
                 this.computerScore += this.nextScore;
                 this.nextScore = 1;
             }
             else {
-                setTimeout(() => {
+                this.indicatorTimeouts.push(setTimeout(() => {
                     placeIndicator(this.createSquareObject());
-                }, 1640);
+                }, 1640));
                 this.nextScore +=1;
             }
 
             if (this.playerHand.size() === 0) {
                 if (this.computerScore > this.playerScore)
-                    console.log('computer winner');
+                    this.youLoseSound.play();
                 else if (this.playerScore > this.computerScore)
                     console.log('player winner');
                 else {
@@ -400,8 +439,6 @@ export class Stage {
             if (obj instanceof THREE.Object3D)
                 obj.children.forEach(c => applyTexture(c));
         };
-        console.log(this.resources.woodTexture);
-        console.log(object);
         applyTexture(object.children[0]);
         object.scale.set(4, 1, 3.2);
         object.position.set(0, -1.65, 0);
@@ -495,7 +532,7 @@ export class Stage {
         let mesh = new THREE.Mesh(geometry, material);
         mesh.name = "O";
         mesh.lookAt(this.camera.position);
-
+        this.indicators.push(mesh);
         return mesh;
     }
 
@@ -517,6 +554,7 @@ export class Stage {
         obj.add(otherHalf);
         obj.name = "X";
         obj.lookAt(this.camera.position);
+        this.indicators.push(obj);
         return obj;
     }
 
@@ -547,6 +585,7 @@ export class Stage {
         obj.name = "square";
         obj.lookAt(this.camera.position);
         obj.scale.set(0.9,0.9,0.9);
+        this.indicators.push(obj);
 
         return obj;
     }
@@ -667,8 +706,6 @@ function createCardObject(resources: ResourceManager, card: Card): THREE.Object3
     let frontTexture = resources.cardTextures[imageName];
     frontTexture.minFilter = THREE.LinearFilter;
     frontTexture.magFilter = THREE.LinearFilter;
-
-    console.log(resources.frontSideAlpha);
 
     let frontMaterial = new THREE.MeshPhongMaterial({
         alphaMap: resources.frontSideAlpha,

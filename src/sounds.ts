@@ -5,7 +5,6 @@ export class Sound {
 
     constructor(audio: HTMLAudioElement, numberChannels: number) {
         for (let i = 0;i < numberChannels; i++) {
-            console.log(audio.cloneNode());
             this.channels.push(<HTMLAudioElement>(audio.cloneNode()));
         }
     }
