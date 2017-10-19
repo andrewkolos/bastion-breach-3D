@@ -251,7 +251,7 @@ export class Stage {
 
             let neutralEntries = this.neutralBoard.objects();
             let currentNeutralObject = neutralEntries[this.playerBoard.size()];
-            this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0, 0.3, -1)), playerObject.rotation, 200, 0);
+            this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0, 0.5, -1)), playerObject.rotation, 200, 0);
             setTimeout(() => this.moveCard(playerObject, currentNeutralObject.position.clone().add(new THREE.Vector3(0, 0, (726 / 500) + 0.02)), new THREE.Euler(Math.PI / 2, 0, 0), 600, 300), 230);
 
             let playerCard = this.playerHand.getCard(playerObject);
@@ -320,6 +320,10 @@ export class Stage {
                 }, 1240));
                 this.nextScore += 1;
             }
+
+            setTimeout(() => {
+                $('#score').html('Player: ' + this.playerScore + '  &nbsp;Computer: ' + this.computerScore);
+            }, 1240);
 
             if (this.playerHand.size() === 0) {
                 let winnerString = "";

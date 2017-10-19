@@ -38,6 +38,18 @@
             margin-right: 10px;
         }
 
+        #score {
+            background-color: rgba(0,0,0,0.5);
+            position: absolute;;
+            top: 0;
+            left: 0;
+            border-radius: 0 5px 5px 5px;
+            padding: 10px;
+            font-size: 1em;
+            color: white;
+            min-width: 100px;
+        }
+
         .noSelect {
             -webkit-user-select: none; /* Safari */
             -moz-user-select: none; /* Firefox */
@@ -109,6 +121,10 @@
 
 <script type="text/javascript" src="Tween.js"></script>
 <script type="text/javascript" src="bundle.js"></script>
+
+<div id="score" class="noSelect">
+Player: 0 &nbsp; Computer: 0
+</div>
 
 <div id="modal" class="noSelect">
     <div class="heading">
