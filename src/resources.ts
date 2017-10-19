@@ -51,6 +51,14 @@ export class ResourceManager {
     };
 
     cardPromise = () => {
+        let removeFirstDuplicate = (str: string, sub: string) => {
+            let n = str.replace(sub,'');
+            if (n.indexOf(sub) > -1)
+                return n;
+            else
+                return str;
+        };
+
         let loader = this.textureLoader;
         return new Promise<Object>(resolve => {
             let mapping = {};
@@ -60,7 +68,8 @@ export class ResourceManager {
                 url: dir,
                 success: function (data) {
                     $(data).find("a:contains(.png)").each((index, element) => {
-                        let filename = (<HTMLAnchorElement>element).href.replace(window.location.host, "").replace("http:///", "");
+                        let filename = dir + (<HTMLAnchorElement>element).href.replace(/^https?:[\/]*/gi, "").replace(window.location.host, "");
+                        filename = removeFirstDuplicate(filename, 'images/card/'); // seems to be required for non-localhost servers, dunno why
                         promises.push(promisifyLoadingTexture(loader, filename));
                     });
                     Promise.all(promises).then((values: any[]) => {
