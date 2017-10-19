@@ -9,6 +9,7 @@
 
         body {
             font-family: Arial;
+            background-color: black;
         }
 
         #resetButton {
@@ -33,10 +34,10 @@
         #cornerui div {
             display: inline-block;
         }
+
         #cornerui .item:not(:last-child) {
             margin-right: 10px;
         }
-
 
         .noSelect {
             -webkit-user-select: none; /* Safari */
@@ -51,10 +52,11 @@
             left: 50%;
             padding: 40px;
             color: white;
+            font-size: 1.2em;
 
             transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.5);
-            border-radius: 5px;
+            background-color: rgba(0, 0, 0, 0.9);
+            border-radius: 15px;
         }
 
         #modal .heading {
@@ -74,6 +76,34 @@
         .noUi-handle {
             cursor: pointer;
         }
+
+        #clickToPlay {
+            padding: 10px;
+            display: inline-block;
+            text-align: center;
+            font-size: 1.4em;
+            border-radius: 10px;
+            min-width: 200px;
+        }
+
+        .whiteBorder {
+            border: 1px solid white;
+        }
+
+        #message {
+            position: absolute;
+            bottom: 90px;
+            left: 50%;
+            width: 480px;
+            transform: translateX(-50%);
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            border-radius: 10px;
+            padding: 10px 10px 10px 10px;
+            text-align: center;
+            font-size: 1.5em;
+        }
     </style>
 </head>
 <body style="margin: 0">
@@ -81,17 +111,29 @@
 <script type="text/javascript" src="Tween.js"></script>
 <script type="text/javascript" src="bundle.js"></script>
 
-<!--<div id="modal" class="noSelect">-->
-<!--<div class="heading">-->
-<!--<h1>Bastion Breach</h1>-->
-<!--</div>-->
-<!--<div id="clickToPlay">-->
-<!--Loading...-->
-<!--</div>-->
-<!--</div>-->
+<div id="modal" class="noSelect">
+    <div class="heading">
+        <h1 style="margin:0">Bastion Breach</h1>
+        <h4 style="margin:0">Made by Andrew Kolos</h4>
+    </div>
+    <div class="body">
+        <p>You and the computer will play a round for each card in the middle, starting with the leftmost card.</p>
+        <p>The highest card wins the round, getting the winner a point.</p>
+        <p>The ace is special—it beats any face card but loses to any number.</p>
+        <p>If neither of the player cards beats the other two cards, then the round ends in a tie. However, the next
+            round will be worth an additional point (these can add up).</p>
+    </div>
+    <div style="text-align: center">
+        <div id="clickToPlay">
+            Loading...
+        </div>
+    </div>
+
+</div>
 <div id="cornerui" class="noSelect">
-    <div class="item ">
-        <img style="margin-right: 10px; width: 25px; height: 25px; transform: translateY(5px)" src="images/vol-white.png" />
+    <div class="item">
+        <img style="margin-right: 10px; width: 25px; height: 25px; transform: translateY(5px)"
+             src="images/vol-white.png"/>
         <div id="volumeSlider"></div>
         <div id="volume" style="margin-left: 12px; width:20px">50</div>
     </div>
@@ -99,6 +141,8 @@
         Reset
     </div>
 </div>
+<div id="message" class="noSelect">
 
+</div>
 </body>
 </html>

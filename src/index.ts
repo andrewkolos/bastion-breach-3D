@@ -5,13 +5,31 @@ import {Stage} from "./render";
 import {ResourceManager} from "./resources";
 
 let stage;
-
 declare let noUiSlider: any;
+declare let TWEEN: any;
 
 document.body.onload = () => {
-
+    let playButton = $('#clickToPlay');
     let resources = new ResourceManager();
     resources.loadResources().then(() => {
+        playButton.addClass('whiteBorder');
+        playButton.html('Play');
+        playButton.css('cursor', 'pointer');
+
+
+        playButton.on('click', () => {
+            let modal = $('#modal');
+            stage.playing = true;
+            let opacity = {value: 1};
+            new TWEEN.Tween(opacity).to({value: 0}, 500)
+                .easing(TWEEN.Easing.Cubic.Out)
+                .onUpdate(function () {
+                    modal.css('opacity', opacity.value);
+                })
+                .onComplete(function () {
+                    modal.css('display', 'none');
+                }).start();
+        });
         stage = new Stage(resources);
         stage.setVolume(0.5);
         stage.init();
@@ -20,6 +38,8 @@ document.body.onload = () => {
 
     $('#resetButton').click(() => {
         stage.resetGame();
+        TWEEN.update(10000);
+        $('#message').css('opacity', '0');
     });
 
     noUiSlider.create($('#volumeSlider')[0], {
@@ -35,7 +55,7 @@ document.body.onload = () => {
         }
     });
     $('#volume').html('50');
-    (<any>$('#volumeSlider')[0]).noUiSlider.on('update', function(values, handle) {
+    (<any>$('#volumeSlider')[0]).noUiSlider.on('update', function (values, handle) {
         if (stage)
             stage.setVolume(values[0] / 100);
         $('#volume').html('' + Math.round(values[0]));

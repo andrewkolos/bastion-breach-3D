@@ -4,7 +4,7 @@ import "./physijs.js";
 import {OrbitControls} from "three-orbitcontrols-ts"
 import {Card, Deck, FACE, NUMERICAL, ROYALTY, SUIT} from "./deck";
 import {AxisHelper, Intersection, Object3D} from "three";
-import * as $ from 'jquery';
+import $ = require('jquery');
 import {Sound} from "./sounds";
 
 declare let TWEEN: any;
@@ -40,6 +40,8 @@ export class Stage {
 
     firstClickFlag = true;
     indicatorTimeouts = [];
+
+    playing = false; // player can play cards
 
     constructor(resources: ResourceManager) {
         this.resources = resources;
@@ -101,7 +103,6 @@ export class Stage {
 
         window.addEventListener('mousemove', this.mousemove, false);
         window.addEventListener('mouseup', this.mouseup, false);
-        this.musicSound.play();
 
     }
 
@@ -217,8 +218,7 @@ export class Stage {
                         return neutral;
                     }
                     if (ROYALTY.indexOf(computer.face) > -1) {
-                        if (NUMERICAL.indexOf(computer.face) > -1)
-                            return neutral;
+                        return neutral;
                     }
                 }
                 if (ROYALTY.indexOf(player.face) > -1) {
@@ -243,7 +243,7 @@ export class Stage {
 
 
         let playerObject = this.selectedCard;
-        if (playerObject) {
+        if (this.playing && playerObject) {
             if (this.firstClickFlag) {
                 this.firstClickFlag = false;
                 TWEEN.update(20000);
@@ -323,13 +323,27 @@ export class Stage {
             }
 
             if (this.playerHand.size() === 0) {
+                let winnerString = "";
                 if (this.computerScore > this.playerScore)
-                    this.youLoseSound.play();
+                    winnerString = "Computer wins.";
                 else if (this.playerScore > this.computerScore)
-                    console.log('player winner');
+                    winnerString = "Player wins!";
                 else {
-                    console.log('tie game');
+                    winnerString = "Tie game!";
                 }
+
+                let messageElement = $('#message');
+                let opacity = {value: 0};
+                messageElement.html(winnerString + " " + this.playerScore + " – " + this.computerScore);
+                setTimeout(() => {
+                    new TWEEN.Tween(opacity).to({value: 0.9}, 900)
+                        .easing(TWEEN.Easing.Cubic.Out)
+                        .onUpdate(function () {
+                            messageElement.css('opacity',  opacity.value);
+                        }).start()
+                }, 1240);
+
+
             }
         }
     };
@@ -337,6 +351,7 @@ export class Stage {
     start = () => {
         this.rendering = true;
         requestAnimationFrame(() => this.render());
+        this.musicSound.play();
     };
 
     render = () => {
@@ -531,7 +546,7 @@ export class Stage {
     private createOObject(): THREE.Object3D {
         let geometry = new THREE.RingGeometry(0.25, 0.5, 32, 32);
         let material = new THREE.MeshPhongMaterial({
-            color: 'red',
+            color: 'green',
             transparent: true,
             opacity: 0.5,
             side: THREE.DoubleSide
@@ -546,7 +561,7 @@ export class Stage {
     private createXObject(): THREE.Object3D {
         let geometry = new THREE.PlaneGeometry(0.2, 1);
         let material = new THREE.MeshPhongMaterial({
-            color: 'blue',
+            color: 'red',
             transparent: true,
             opacity: 0.5,
             side: THREE.DoubleSide
@@ -568,7 +583,7 @@ export class Stage {
     private createSquareObject(): THREE.Object3D {
         let geometry = new THREE.PlaneGeometry(0.2, 1);
         let material = new THREE.MeshPhongMaterial({
-            color: 'green',
+            color: 'blue',
             transparent: true,
             opacity: 0.5,
             side: THREE.DoubleSide
