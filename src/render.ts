@@ -33,26 +33,23 @@ export class Stage {
     computerScore = 0;
     nextScore = 1;
 
-    cardFlipSound = new Sound(new Audio('sound/cardflip.mp3'), 10);
-    drawCardSound = new Sound(new Audio('sound/drawcard.mp3'),10);
-    youLoseSound = new Audio('sound/youlose.mp3');
-    musicSound = new Audio('sound/quadproquo.mp3');
+    cardFlipSound = new Sound(new Audio('sound/cardflip.mp3'), 0.9, 10);
+    drawCardSound = new Sound(new Audio('sound/drawcard.mp3'), 0.6, 10);
+    youLoseSound = new Sound(new Audio('sound/youlose.mp3'), 0.3, 1);
+    musicSound = new Sound(new Audio('sound/quadproquo.mp3'), 0.3, 1);
 
     firstClickFlag = true;
     indicatorTimeouts = [];
 
     constructor(resources: ResourceManager) {
         this.resources = resources;
-        this.cardFlipSound.setVolume(0.4);
-        this.youLoseSound.volume = 0.15;
-        this.musicSound.volume = 0.2;
         this.musicSound.addEventListener('timeupdate', () => {
             let buffer = .20;
-            if(this.musicSound.currentTime > this.musicSound.duration - buffer) {
+            if (this.musicSound.currentTime > this.musicSound.duration - buffer) {
                 this.musicSound.currentTime = 0;
                 this.musicSound.play();
-                }
-            }, false);
+            }
+        });
     }
 
     public resetGame() {
@@ -83,7 +80,7 @@ export class Stage {
         this.nextScore = 1;
 
         this.firstClickFlag = true;
-        this.indicatorTimeouts.forEach(t=>clearTimeout(t));
+        this.indicatorTimeouts.forEach(t => clearTimeout(t));
 
         this.createCards(SUIT.CLUBS, SUIT.DIAMONDS, SUIT.HEARTS);
     }
@@ -256,7 +253,7 @@ export class Stage {
             let neutralEntries = this.neutralBoard.objects();
             let currentNeutralObject = neutralEntries[this.playerBoard.size()];
             this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0, 0.3, -1)), playerObject.rotation, 200, 0);
-            setTimeout(() => this.moveCard(playerObject, currentNeutralObject.position.clone().add(new THREE.Vector3(0, 0, (726 / 500) + 0.02)), new THREE.Euler(Math.PI / 2, 0, 0), 1000, 300), 230);
+            setTimeout(() => this.moveCard(playerObject, currentNeutralObject.position.clone().add(new THREE.Vector3(0, 0, (726 / 500) + 0.02)), new THREE.Euler(Math.PI / 2, 0, 0), 600, 300), 230);
 
             let playerCard = this.playerHand.getCard(playerObject);
             this.playerHand.deleteByObject(playerObject);
@@ -267,7 +264,7 @@ export class Stage {
 
             let opponentObject = this.computerHand.objects()[Math.floor(Math.random() * this.computerHand.size())]; // get random opponent card
             this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, 0.5, 0)), new THREE.Euler(Math.PI / 2, 0, 0), 200, 0);
-            setTimeout(() => this.moveCard(opponentObject, currentNeutralObject.position.clone().add(new THREE.Vector3(0, 0, -(726 / 500) - 0.02)), new THREE.Euler(Math.PI / 2, 0, 0), 1000, 1000), 230);
+            setTimeout(() => this.moveCard(opponentObject, currentNeutralObject.position.clone().add(new THREE.Vector3(0, 0, -(726 / 500) - 0.02)), new THREE.Euler(Math.PI / 2, 0, 0), 600, 600), 230);
             let opponentCard = this.computerHand.getCard(opponentObject);
             this.computerHand.deleteByObject(opponentObject);
             this.computerBoard.set(opponentCard, opponentObject);
@@ -275,13 +272,13 @@ export class Stage {
 
             ///
 
-            setTimeout(() => this.cardFlipSound.play(), 1230);
+            setTimeout(() => this.cardFlipSound.play(), 830);
 
-            setTimeout(() => this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Euler(-Math.PI / 2), 200, 200), 1230);
-            setTimeout(() => this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0, -1, 0)), playerObject.rotation, 100, 0), 1460);
+            setTimeout(() => this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Euler(-Math.PI / 2), 200, 200), 830);
+            setTimeout(() => this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0, -1, 0)), playerObject.rotation, 100, 0), 1060);
 
-            setTimeout(() => this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Euler(-Math.PI / 2), 200, 200), 1230);
-            setTimeout(() => this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, -1, 0)), opponentObject.rotation, 200, 0), 1460);
+            setTimeout(() => this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Euler(-Math.PI / 2), 200, 200), 830);
+            setTimeout(() => this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, -1, 0)), opponentObject.rotation, 200, 0), 1060);
 
             ///
 
@@ -307,22 +304,22 @@ export class Stage {
             if (winner === playerCard) {
                 this.indicatorTimeouts.push(setTimeout(() => {
                     placeIndicator(this.createOObject());
-                }, 1640));
+                }, 1240));
                 this.playerScore += this.nextScore;
                 this.nextScore = 1;
             }
             else if (winner === opponentCard) {
                 this.indicatorTimeouts.push(setTimeout(() => {
                     placeIndicator(this.createXObject());
-                }, 1640));
+                }, 1240));
                 this.computerScore += this.nextScore;
                 this.nextScore = 1;
             }
             else {
                 this.indicatorTimeouts.push(setTimeout(() => {
                     placeIndicator(this.createSquareObject());
-                }, 1640));
-                this.nextScore +=1;
+                }, 1240));
+                this.nextScore += 1;
             }
 
             if (this.playerHand.size() === 0) {
@@ -594,10 +591,17 @@ export class Stage {
         obj.add(top);
         obj.name = "square";
         obj.lookAt(this.camera.position);
-        obj.scale.set(0.9,0.9,0.9);
+        obj.scale.set(0.9, 0.9, 0.9);
         this.indicators.push(obj);
 
         return obj;
+    }
+
+    setVolume(volume: number) {
+        this.cardFlipSound.setVolume(volume);
+        this.drawCardSound.setVolume(volume);
+        this.youLoseSound.setVolume(volume);
+        this.musicSound.setVolume(volume);
     }
 }
 
