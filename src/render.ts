@@ -322,7 +322,7 @@ export class Stage {
             }
 
             setTimeout(() => {
-                $('#score').html('Player: ' + this.playerScore + '  &nbsp;Computer: ' + this.computerScore);
+                $('#score').html('Player: ' + this.playerScore + ' &nbsp; Computer: ' + this.computerScore);
             }, 1240);
 
             if (this.playerHand.size() === 0) {
