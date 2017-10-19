@@ -83,7 +83,7 @@ export class Stage {
         this.firstClickFlag = true;
         this.indicatorTimeouts.forEach(t => clearTimeout(t));
 
-        this.createCards(SUIT.CLUBS, SUIT.DIAMONDS, SUIT.HEARTS);
+        this.createCards(SUIT.SPADES, SUIT.DIAMONDS, SUIT.HEARTS);
     }
 
     init() {
@@ -94,7 +94,7 @@ export class Stage {
         this.initLights();
         this.initCamera();
         this.initRenderer();
-        this.createCards(SUIT.CLUBS, SUIT.DIAMONDS, SUIT.HEARTS);
+        this.createCards(SUIT.SPADES, SUIT.DIAMONDS, SUIT.HEARTS);
         //new OrbitControls(this.camera, this.renderer.domElement);
         /*this.scene.add(new AxisHelper(3));*/
         this.initTableObject();
