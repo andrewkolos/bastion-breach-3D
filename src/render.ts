@@ -35,7 +35,6 @@ export class Stage {
 
     cardFlipSound = new Sound(new Audio('sound/cardflip.mp3'), 0.9, 10);
     drawCardSound = new Sound(new Audio('sound/drawcard.mp3'), 0.6, 10);
-    youLoseSound = new Sound(new Audio('sound/youlose.mp3'), 0.3, 1);
     musicSound = new Sound(new Audio('sound/quadproquo.mp3'), 0.3, 1);
 
     firstClickFlag = true;
@@ -329,19 +328,19 @@ export class Stage {
                 else if (this.playerScore > this.computerScore)
                     winnerString = "Player wins!";
                 else {
-                    winnerString = "Tie game!";
+                    winnerString = "Draw!";
                 }
 
                 let messageElement = $('#message');
                 let opacity = {value: 0};
                 messageElement.html(winnerString + " " + this.playerScore + " – " + this.computerScore);
                 setTimeout(() => {
-                    new TWEEN.Tween(opacity).to({value: 0.9}, 900)
+                    new TWEEN.Tween(opacity).to({value: 0.9}, 500)
                         .easing(TWEEN.Easing.Cubic.Out)
                         .onUpdate(function () {
                             messageElement.css('opacity',  opacity.value);
                         }).start()
-                }, 1240);
+                }, 900);
 
 
             }
@@ -615,7 +614,6 @@ export class Stage {
     setVolume(volume: number) {
         this.cardFlipSound.setVolume(volume);
         this.drawCardSound.setVolume(volume);
-        this.youLoseSound.setVolume(volume);
         this.musicSound.setVolume(volume);
     }
 }
