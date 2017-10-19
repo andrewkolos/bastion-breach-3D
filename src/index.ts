@@ -40,7 +40,7 @@ document.body.onload = () => {
     $('#resetButton').click(() => {
         stage.resetGame();
         TWEEN.update(10000);
-        $('#score').html("Player: 0 &nbsp;Computer: 0");
+        $('#score').html("Player: 0 &nbsp; Computer: 0");
         $('#message').css('opacity', '0');
     });
 

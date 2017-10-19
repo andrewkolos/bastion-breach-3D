@@ -251,7 +251,7 @@ export class Stage {
 
             let neutralEntries = this.neutralBoard.objects();
             let currentNeutralObject = neutralEntries[this.playerBoard.size()];
-            this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0, 0.5, -1)), playerObject.rotation, 200, 0);
+            this.moveCard(playerObject, playerObject.position.clone().add(new THREE.Vector3(0, 0.7, -1)), playerObject.rotation, 200, 0);
             setTimeout(() => this.moveCard(playerObject, currentNeutralObject.position.clone().add(new THREE.Vector3(0, 0, (726 / 500) + 0.02)), new THREE.Euler(Math.PI / 2, 0, 0), 600, 300), 230);
 
             let playerCard = this.playerHand.getCard(playerObject);
@@ -284,12 +284,12 @@ export class Stage {
             let currentNeutralCard = this.neutralBoard.getCard(currentNeutralObject);
 
             let winner = determineWinner(playerCard, opponentCard, currentNeutralCard);
-            let placeIndicator = (object: THREE.Object3D) => {
+            let placeIndicator = (object: THREE.Object3D, op: number) => {
                 object.position.copy(currentNeutralObject.position.clone().add(new THREE.Vector3(0, 0.02, 0)));
                 object.rotation.set(-Math.PI / 2, 0, 0);
                 this.scene.add(object);
                 let opacity = {value: 0};
-                new TWEEN.Tween(opacity).to({value: 0.9}, 700)
+                new TWEEN.Tween(opacity).to({value: op}, 700)
                     .easing(TWEEN.Easing.Cubic.Out)
                     .onUpdate(function () {
                         if (object instanceof THREE.Mesh) { // circle
@@ -302,21 +302,21 @@ export class Stage {
             };
             if (winner === playerCard) {
                 this.indicatorTimeouts.push(setTimeout(() => {
-                    placeIndicator(this.createOObject());
+                    placeIndicator(this.createOObject(), 0.9);
                 }, 1240));
                 this.playerScore += this.nextScore;
                 this.nextScore = 1;
             }
             else if (winner === opponentCard) {
                 this.indicatorTimeouts.push(setTimeout(() => {
-                    placeIndicator(this.createXObject());
+                    placeIndicator(this.createXObject(), 0.9);
                 }, 1240));
                 this.computerScore += this.nextScore;
                 this.nextScore = 1;
             }
             else {
                 this.indicatorTimeouts.push(setTimeout(() => {
-                    placeIndicator(this.createSquareObject());
+                    placeIndicator(this.createSquareObject(),0.75);
                 }, 1240));
                 this.nextScore += 1;
             }
@@ -584,7 +584,7 @@ export class Stage {
     }
 
     private createSquareObject(): THREE.Object3D {
-        let geometry = new THREE.PlaneGeometry(0.2, 1);
+        let geometry = new THREE.PlaneGeometry(0.2, 0.6);
         let material = new THREE.MeshPhongMaterial({
             color: 'blue',
             transparent: true,
@@ -602,11 +602,26 @@ export class Stage {
         bottom.rotation.set(0, 0, Math.PI / 2);
         bottom.position.set(0, -0.4, 0);
 
+        let cornerGeometry = new THREE.PlaneGeometry(0.2,0.2);
+        let topLeft = new THREE.Mesh(cornerGeometry, material);
+        topLeft.position.set(-0.4, 0.4, 0);
+        let topRight = topLeft.clone();
+        topRight.position.set(0.4, 0.4, 0);
+        let bottomRight = topLeft.clone();
+        bottomRight.position.set(0.4, -0.4, 0);
+        let bottomLeft = topLeft.clone();
+        bottomLeft.position.set(-0.4, -0.4, 0);
+
+
         let obj = new THREE.Object3D();
         obj.add(left);
         obj.add(bottom);
         obj.add(right);
         obj.add(top);
+        obj.add(topLeft);
+        obj.add(topRight);
+        obj.add(bottomRight);
+        obj.add(bottomLeft);
         obj.name = "square";
         obj.lookAt(this.camera.position);
         obj.scale.set(0.9, 0.9, 0.9);
