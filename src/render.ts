@@ -41,6 +41,7 @@ export class Stage {
     indicatorTimeouts = [];
 
     playing = false; // player can play cards
+    private readyToPlay = false; // similar to playing but for internal use
 
     constructor(resources: ResourceManager) {
         this.resources = resources;
@@ -195,7 +196,7 @@ export class Stage {
         }
 
         let playerObject = this.selectedCard;
-        if (this.playing && playerObject) {
+        if (this.playing && this.readyToPlay && playerObject) {
 
             this.drawCardSound.play();
 
@@ -334,7 +335,7 @@ export class Stage {
 
         this.selectedCard = null;
 
-        if (intersections.length > 0) {
+        if (intersections.length > 0 && this.playing && this.readyToPlay) {
             let card = intersections[0].object.parent;
             this.selectedCard = card;
             $('body').css('cursor', 'pointer');
@@ -471,10 +472,10 @@ export class Stage {
         Array.from(this.neutralBoard.objects()).forEach(v => this.scene.add(v));
         Array.from(this.computerHand.objects()).forEach(v => this.scene.add(v));
 
-        this.playing = false;
+        this.readyToPlay = false;
         new TweenGroup(this.dealCards(Array.from(this.playerHand.objects()), new THREE.Vector3(0, 0.4, 3), new THREE.Vector3(-.2, .01, 0), new THREE.Euler(-Math.PI / 2.8, 0, 0), 1000, 1000)).start();
         new TweenGroup(this.dealCards(Array.from(this.neutralBoard.objects()), new THREE.Vector3(0, 0, 0), new THREE.Vector3(0.1, 0, 0), new THREE.Euler(-Math.PI / 2, 0, 0), 1000, 1), () => {
-            this.playing = true;
+            this.readyToPlay = true;
         }).start();
         new TweenGroup(this.dealCards(Array.from(this.computerHand.objects()), new THREE.Vector3(0, 0, -3), new THREE.Vector3(0.1, 0, 0), new THREE.Euler(Math.PI / 2, 0, 0), 1000, 1)).start();
     }

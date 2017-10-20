@@ -17,6 +17,10 @@ document.body.onload = () => {
         playButton.html('Play');
         playButton.css('cursor', 'pointer');
 
+        stage = new Stage(resources);
+        stage.setVolume(0.5);
+        stage.init();
+        stage.start();
 
         playButton.on('click', () => {
             let modal = $('#modal');
@@ -32,10 +36,6 @@ document.body.onload = () => {
                 }).start();
             playButton.off('click'); // do not let animation start again if user clicks twice
         });
-        stage = new Stage(resources);
-        stage.setVolume(0.5);
-        stage.init();
-        stage.start();
     });
 
     $('#resetButton').click(() => {
