@@ -189,12 +189,14 @@ export class Stage {
             return neutral;
         };
 
+        if (this.firstClickFlag) {
+            this.firstClickFlag = false;
+            return;
+        }
 
         let playerObject = this.selectedCard;
         if (this.playing && playerObject) {
-            if (this.firstClickFlag) {
-                this.firstClickFlag = false;
-            }
+
             this.drawCardSound.play();
 
             let neutralEntries = this.neutralBoard.objects();
@@ -430,7 +432,7 @@ export class Stage {
     }
 
     private initGround() {
-        let geometry = new THREE.PlaneGeometry(50, 50);
+        let geometry = new THREE.PlaneGeometry(70, 70);
         let material = new THREE.MeshPhongMaterial({map: this.resources.grassTexture});
         let mesh = new THREE.Mesh(geometry, material);
         mesh.rotateX(-Math.PI / 2);

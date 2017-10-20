@@ -30,6 +30,7 @@ document.body.onload = () => {
                 .onComplete(function () {
                     modal.css('display', 'none');
                 }).start();
+            playButton.off('click'); // do not let animation start again if user clicks twice
         });
         stage = new Stage(resources);
         stage.setVolume(0.5);
