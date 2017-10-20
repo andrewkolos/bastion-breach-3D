@@ -40,7 +40,7 @@ export class ResourceManager {
                 this.woodTexture.wrapS = this.woodTexture.wrapT = THREE.RepeatWrapping;
                 this.grassTexture = values[5][1];
                 this.grassTexture.offset.set(0, 0);
-                this.grassTexture.repeat.set(48, 48);
+                this.grassTexture.repeat.set(24, 24);
                 this.grassTexture.wrapS = this.grassTexture.wrapT = THREE.RepeatWrapping;
                 this.table = values[6];
                 this.loaded = true;
