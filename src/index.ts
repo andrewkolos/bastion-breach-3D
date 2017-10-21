@@ -10,8 +10,11 @@ declare let TWEEN: any;
 
 document.body.onload = () => {
 
+    let modal = $('#modal');
     let playButton = $('#clickToPlay');
     let resources = new ResourceManager();
+    let playButtonActive = true;
+
     resources.loadResources().then(() => {
         playButton.addClass('whiteBorder');
         playButton.html('Play');
@@ -23,18 +26,19 @@ document.body.onload = () => {
         stage.start();
 
         playButton.on('click', () => {
-            let modal = $('#modal');
-            stage.playing = true;
-            let opacity = {value: 1};
-            new TWEEN.Tween(opacity).to({value: 0}, 500)
-                .easing(TWEEN.Easing.Cubic.Out)
-                .onUpdate(function () {
-                    modal.css('opacity', opacity.value);
-                })
-                .onComplete(function () {
-                    modal.css('display', 'none');
-                }).start();
-            playButton.off('click'); // do not let animation start again if user clicks twice
+            if (playButtonActive) {
+                stage.playing = true;
+                let opacity = {value: 1};
+                new TWEEN.Tween(opacity).to({value: 0}, 500)
+                    .easing(TWEEN.Easing.Cubic.Out)
+                    .onUpdate(function () {
+                        modal.css('opacity', opacity.value);
+                    })
+                    .onComplete(function () {
+                        modal.css('display', 'none');
+                    }).start();
+                playButtonActive = false;
+            }
         });
     });
 
@@ -42,6 +46,18 @@ document.body.onload = () => {
         stage.resetGame();
         $('#score').html("Player: 0 &nbsp; Computer: 0");
         $('#message').css('opacity', '0');
+    });
+
+    $('#showRules').click(() => {
+        stage.playing = false;
+        let opacity = {value: 0};
+        modal.css('display', 'block');
+        new TWEEN.Tween(opacity).to({value: 1}, 500)
+            .easing(TWEEN.Easing.Cubic.Out)
+            .onUpdate(function () {
+                modal.css('opacity', opacity.value);
+            }).start();
+        playButtonActive = true;
     });
 
     noUiSlider.create($('#volumeSlider')[0], {

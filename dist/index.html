@@ -11,10 +11,6 @@
             background-color: black;
         }
 
-        #resetButton {
-            border-left: 1px solid #aaaaaa;
-        }
-
         #cornerui {
             position: absolute;
             top: 0;
@@ -34,12 +30,18 @@
             display: inline-block;
         }
 
-        #cornerui .item:not(:last-child) {
+        #volumeSliderWrapper {
             margin-right: 10px;
         }
 
+        #cornerui .button {
+            text-align: center;
+            cursor: pointer;
+            border-left: 1px solid #aaaaaa;
+        }
+
         #score {
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0, 0, 0, 0.5);
             position: absolute;;
             top: 0;
             left: 0;
@@ -64,10 +66,14 @@
             padding: 40px;
             color: white;
             font-size: 1.2em;
+            min-width: 600px;
+            max-width: 1000px;
+            width: 80%;
 
             transform: translate(-50%, -50%);
             background-color: rgba(0, 0, 0, 0.9);
             border-radius: 15px;
+            max-height: 90%;
         }
 
         #modal .heading {
@@ -77,10 +83,6 @@
 
         #volumeSlider {
             width: 100px;
-            cursor: pointer;
-        }
-
-        #resetButton {
             cursor: pointer;
         }
 
@@ -123,7 +125,7 @@
 <script type="text/javascript" src="bundle.js"></script>
 
 <div id="score" class="noSelect">
-Player: 0 &nbsp; Computer: 0
+    Player: 0 &nbsp; Computer: 0
 </div>
 
 <div id="modal" class="noSelect">
@@ -133,10 +135,16 @@ Player: 0 &nbsp; Computer: 0
     </div>
     <div class="body">
         <p>You and the computer will play a round for each card in the middle, starting with the leftmost card.</p>
-        <p>The highest ranked card wins the round, getting the winner a point.</p>
+        <p>Click on a card in your hand to play it against the middle card and the card your opponent plays. Note that
+            you both have all the cards of one suit.</p>
+        <p>The highest ranked card of the three wins the round, getting the winner a point.</p>
         <p>The ace is special—it beats any face card but loses to any number.</p>
-        <p>If neither of the player cards beats the other two cards, then the round ends in a tie. <em>However, the next
-            round will be worth an additional point</em> (these can add up).</p>
+        <p>If neither of the player cards beats the other two cards, then the round ends in a stalemate. <em>However, the next
+            round will be worth an additional point</em> (these can add up). For example, if there are ties in a row,
+            the next round is worth 4 points.</p>
+        <p><span style="color: lawngreen">Player wins</span> are denoted with <span style="color: lawngreen">green circles</span>, <span style="color: red">computer wins</span> with <span
+                style="color: red">red crosses</span>, and <span style="color: dodgerblue">stalemates</span> with <span style="color: dodgerblue">blue squares</span>.
+        </p>
     </div>
     <div style="text-align: center">
         <div id="clickToPlay">
@@ -146,14 +154,17 @@ Player: 0 &nbsp; Computer: 0
 
 </div>
 <div id="cornerui" class="noSelect">
-    <div class="item">
+    <div id="volumeSliderWrapper" class="item">
         <img style="margin-right: 10px; width: 25px; height: 25px; transform: translateY(5px)"
              src="images/vol-white.png"/>
         <div id="volumeSlider"></div>
         <div id="volume" style="margin-left: 12px; width:20px">50</div>
     </div>
-    <div id="resetButton" class="item">
+    <div id="resetButton" class="item button">
         Reset
+    </div>
+    <div id="showRules" class="item button">
+        Rules
     </div>
 </div>
 <div id="message" class="noSelect">
