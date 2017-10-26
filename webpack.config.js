@@ -1,8 +1,12 @@
 const path = require('path');
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
     entry: './src/index.ts',
     devtool: "inline-source-map",
+    plugins: [
+        new UglifyJSPlugin()
+    ],
     module: {
         loaders: [
             { test: /\.ts$/, loader: 'ts-loader' }
