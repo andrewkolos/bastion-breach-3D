@@ -68,8 +68,11 @@ export class ResourceManager {
                 url: dir,
                 success: function (data) {
                     $(data).find("a:contains(.png)").each((index, element) => {
-                        let filename = dir + (<HTMLAnchorElement>element).href.replace(/^https?:[\/]*/gi, "").replace(window.location.host, "");
+                        let path = document.location.pathname;
+                        let directory = path.substring(path.indexOf('/'), path.lastIndexOf('/'));
+                        let filename = dir + (<HTMLAnchorElement>element).href.replace(/^https?:[\/]*/gi, "").replace(directory, "").replace(window.location.host, '');
                         filename = removeFirstDuplicate(filename, 'images/card/'); // seems to be required for non-localhost servers, dunno why
+                        console.log(filename);
                         promises.push(promisifyLoadingTexture(loader, filename));
                     });
                     Promise.all(promises).then((values: any[]) => {
