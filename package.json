@@ -6,7 +6,8 @@
   "scripts": {
     "start": "http-server dist -p 7000",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node_modules/.bin/webpack"
+    "build": "node_modules/.bin/webpack",
+    "dev-server": "webpack-dev-server"
   },
   "author": "",
   "license": "ISC",
@@ -18,7 +19,8 @@
     "http-server": "^0.10.0",
     "ts-loader": "^2.3.7",
     "typescript": "^2.5.3",
-    "webpack": "^3.6.0"
+    "webpack": "^3.6.0",
+    "webpack-dev-server": "^2.9.3"
   },
   "dependencies": {
     "@tweenjs/tween.js": "^17.1.1",
