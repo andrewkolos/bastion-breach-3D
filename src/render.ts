@@ -716,7 +716,7 @@ function createCardObject(resources: ResourceManager, card: Card): THREE.Object3
     let imageName = replaceStringWithNumber(FACE[card.face].toLowerCase()) + "_of_" + SUIT[card.suit].toLowerCase();
     let frontGeometry = new THREE.PlaneGeometry(500 / 500, 726 / 500);
     let backGeometry = frontGeometry.clone();
-    let frontTexture = resources.cardTextures[imageName];
+    let frontTexture = (<any>resources.cardTextures)[imageName];
     frontTexture.minFilter = THREE.LinearFilter;
     frontTexture.magFilter = THREE.LinearFilter;
 

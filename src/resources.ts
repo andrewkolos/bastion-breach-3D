@@ -3,10 +3,21 @@ import $ = require('jquery');
 
 export class ResourceManager {
 
+    private cardFilenames = ["images/card/10_of_diamonds.png", "images/card/10_of_hearts.png", "images/card/10_of_spades.png",
+        "images/card/2_of_clubs.png", "images/card/2_of_diamonds.png", "images/card/2_of_hearts.png", "images/card/2_of_spades.png",
+        "images/card/3_of_diamonds.png", "images/card/3_of_hearts.png", "images/card/3_of_spades.png", "images/card/4_of_diamonds.png",
+        "images/card/4_of_hearts.png", "images/card/4_of_spades.png", "images/card/5_of_diamonds.png", "images/card/5_of_hearts.png",
+        "images/card/5_of_spades.png", "images/card/6_of_diamonds.png", "images/card/6_of_hearts.png", "images/card/6_of_spades.png",
+        "images/card/7_of_diamonds.png", "images/card/7_of_hearts.png", "images/card/7_of_spades.png", "images/card/8_of_diamonds.png",
+        "images/card/8_of_hearts.png", "images/card/8_of_spades.png", "images/card/9_of_diamonds.png", "images/card/9_of_hearts.png",
+        "images/card/9_of_spades.png", "images/card/ace_of_diamonds.png", "images/card/ace_of_hearts.png", "images/card/ace_of_spades.png",
+        "images/card/backside.png", "images/card/backside_alpha.png", "images/card/frontside_alpha.png", "images/card/jack_of_diamonds.png",
+        "images/card/jack_of_hearts.png", "images/card/jack_of_spades.png", "images/card/king_of_diamonds.png", "images/card/king_of_hearts.png",
+        "images/card/king_of_spades.png", "images/card/queen_of_diamonds.png", "images/card/queen_of_hearts.png", "images/card/queen_of_spades.png"];
+
     private textureLoader: THREE.TextureLoader;
     loaded: boolean = false;
 
-    boardTexture: THREE.Texture;
     cardTextures: Object;
     cardBackTexture: THREE.Texture;
     frontSideAlpha: THREE.Texture;
@@ -18,74 +29,37 @@ export class ResourceManager {
 
     constructor() {
         this.textureLoader = new THREE.TextureLoader();
+        this.cardTextures = {};
     }
 
     loadResources = () => {
         return new Promise((resolve => {
-            //console.log(ResourceManager.promisifyLoadingTexture(this.textureLoader,'images/board.png'));
-            let promises = [this.cardPromise(), this.cardBackPromise(),
-                promisifyLoadingTexture(this.textureLoader, 'images/card/frontside_alpha.png'),
-                promisifyLoadingTexture(this.textureLoader, 'images/card/backside_alpha.png'),
-                promisifyLoadingTexture(this.textureLoader, 'images/wood.png'),
-                promisifyLoadingTexture(this.textureLoader, 'images/grass.png'),
-                this.tableModelPromise()];
+            //console.log(ResourceManager.this.promisifyLoadingTexture(this.textureLoader,'images/board.png'));
+            let promises = [this.cardBackPromise(),
+                this.promisifyLoadingTexture(this.textureLoader, 'images/card/frontside_alpha.png'),
+                this.promisifyLoadingTexture(this.textureLoader, 'images/card/backside_alpha.png'),
+                this.promisifyLoadingTexture(this.textureLoader, 'images/wood.png'),
+                this.promisifyLoadingTexture(this.textureLoader, 'images/grass.png'),
+                this.tableModelPromise(), this.promisifyLoadingCardTexture()];
             Promise.all(promises).then((values: any[]) => {
-                this.cardTextures = values[0];
-                this.cardBackTexture = values[1];
-                this.frontSideAlpha = values[2][1];
-                this.backSideAlpha = values[3][1];
-                this.woodTexture = values[4][1];
+                this.cardBackTexture = values[0];
+                this.frontSideAlpha = values[1][1];
+                this.backSideAlpha = values[2][1];
+                this.woodTexture = values[3][1];
                 this.woodTexture.offset.set(0, 0);
                 this.woodTexture.repeat.set(24, 24);
                 this.woodTexture.wrapS = this.woodTexture.wrapT = THREE.RepeatWrapping;
-                this.grassTexture = values[5][1];
+                this.grassTexture = values[4][1];
                 this.grassTexture.offset.set(0, 0);
                 this.grassTexture.repeat.set(24, 24);
                 this.grassTexture.wrapS = this.grassTexture.wrapT = THREE.RepeatWrapping;
-                this.table = values[6];
+                this.table = values[5];
+                this.cardTextures = values[6];
                 this.loaded = true;
 
                 resolve();
             })
         }));
-    };
-
-    cardPromise = () => {
-        let removeFirstDuplicate = (str: string, sub: string) => {
-            let n = str.replace(sub,'');
-            if (n.indexOf(sub) > -1)
-                return n;
-            else
-                return str;
-        };
-
-        let loader = this.textureLoader;
-        return new Promise<Object>(resolve => {
-            let mapping = {};
-            let promises = new Array<Promise<any>>();
-            let dir = '/images/card';
-            $.ajax({
-                url: dir,
-                success: function (data) {
-                    $(data).find("a:contains(.png)").each((index, element) => {
-                        let path = document.location.pathname;
-                        let directory = path.substring(path.indexOf('/'), path.lastIndexOf('/'));
-                        let filename = dir + (<HTMLAnchorElement>element).href.replace(/^https?:[\/]*/gi, "").replace(directory, "").replace(window.location.host, '');
-                        filename = removeFirstDuplicate(filename, 'images/card/'); // seems to be required for non-localhost servers, dunno why
-                        console.log(filename);
-                        promises.push(promisifyLoadingTexture(loader, filename));
-                    });
-                    Promise.all(promises).then((values: any[]) => {
-                        values.forEach((value: [string, THREE.Texture]) => {
-                            let regex = /[^\\\/]+(?=\.[\w]+$)|[^\\\/]+$/g;
-                            value[0] = regex.exec(value[0])[0];
-                            mapping[value[0]] = value[1];
-                        });
-                        resolve(mapping);
-                    });
-                }
-            });
-        });
     };
 
     cardBackPromise = () => {
@@ -103,13 +77,31 @@ export class ResourceManager {
                 resolve(object);
             });
         });
+    };
+
+    promisifyLoadingCardTexture = () => {
+        return new Promise<Object>(resolve => {
+            let mapping = {};
+            let promises = this.cardFilenames.map(s => this.promisifyLoadingTexture(this.textureLoader, s));
+
+            Promise.all(promises).then((values: any[]) => {
+                values.forEach((value: [string, THREE.Texture]) => {
+                    let regex = /[^\\\/]+(?=\.[\w]+$)|[^\\\/]+$/g;
+                    value[0] = regex.exec(value[0])[0];
+                    mapping[value[0]] = value[1];
+                });
+                resolve(mapping);
+            });
+        });
+
+    };
+
+    promisifyLoadingTexture(loader, url: string) {
+        return new Promise(resolve => {
+            loader.load(url, texture => {
+                resolve([url, texture]);
+            });
+        });
     }
 }
 
-function promisifyLoadingTexture(loader, url: string) {
-    return new Promise(resolve => {
-        loader.load(url, texture => {
-            resolve([url, texture]);
-        });
-    });
-}
