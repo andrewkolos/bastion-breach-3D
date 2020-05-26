@@ -32,7 +32,7 @@
   "dependencies": {
     "@tweenjs/tween.js": "^17.1.1",
     "jest": "^26.0.1",
-    "jquery": "^3.2.1",
+    "jquery": "^3.5.0",
     "jquery-ui": "^1.12.1",
     "three": "^0.87.1",
     "three-obj-loader": "^1.1.3",
