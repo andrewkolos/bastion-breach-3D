@@ -1,5 +1,4 @@
 import $ = require('jquery');
-import THREE = require('three');
 import 'jquery-ui/ui/widgets/slider'
 import {Stage} from "./render";
 import {ResourceManager} from "./resources";

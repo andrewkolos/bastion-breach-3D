@@ -1,6 +1,5 @@
 import {ResourceManager} from "./resources";
 import * as THREE from 'three';
-import "./physijs.js";
 import {OrbitControls} from "three-orbitcontrols-ts"
 import {Card, Deck, FACE, NUMERICAL, ROYALTY, SUIT} from "./deck";
 import {AxisHelper, Intersection, Object3D} from "three";
@@ -88,16 +87,12 @@ export class Stage {
     }
 
     init() {
-        /* this.scene = new Physijs.Scene();
-         this.scene.setGravity(new THREE.Vector3(0, -30, 0));*/
         this.scene = new THREE.Scene();
         this.scene.fog = new THREE.Fog(0xffffff, 0.1, 50);
         this.initLights();
         this.initCamera();
         this.initRenderer();
         this.createCards(SUIT.SPADES, SUIT.DIAMONDS, SUIT.HEARTS);
-        //new OrbitControls(this.camera, this.renderer.domElement);
-        /*this.scene.add(new AxisHelper(3));*/
         this.initTableObject();
         this.initGround();
 
@@ -236,10 +231,6 @@ export class Stage {
             this.computerBoard.set(opponentCard, opponentObject);
             new TweenGroup(this.dealCards(Array.from(this.computerHand.objects()), new THREE.Vector3(0, 0, -3), new THREE.Vector3(0.1, 0, 0), new THREE.Euler(Math.PI / 2, 0, 0), 1000, 1)).start();
 
-            ///
-
-            ///
-
             let currentNeutralCard = this.neutralBoard.getCard(currentNeutralObject);
 
             let winner = determineWinner(playerCard, opponentCard, currentNeutralCard);
@@ -374,8 +365,6 @@ export class Stage {
         dirLight2.shadow.mapSize.width = 1024;
         dirLight2.shadow.mapSize.height = 1024;
         this.scene.add(dirLight2);
-        /*this.scene.add(new THREE.CameraHelper(dirLight2.shadow.camera));
-        this.scene.add(new THREE.DirectionalLightHelper(dirLight2));*/
 
         let hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3);
         hemiLight.color.setHSL(0.6, 1, 0.6);
@@ -385,11 +374,6 @@ export class Stage {
 
         let ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
         this.scene.add(ambientLight);
-
-        /*this.scene.add(new THREE.DirectionalLightHelper(dirLight1));
-
-        this.scene.add(new THREE.CameraHelper(dirLight1.shadow.camera));*/
-
     }
 
     private initCamera() {
@@ -708,7 +692,7 @@ class PhysicalDeck {
 
 function createCardObject(resources: ResourceManager, card: Card): THREE.Object3D {
     let replaceStringWithNumber = (str: string) => {
-        // not exactly efficiently but nice and short
+        // not exactly efficient but nice and short
         return str.replace('one', '1').replace('two', '2').replace('three', '3').replace('four', '4')
             .replace('five', '5').replace('six', '6').replace('seven', '7').replace('eight', '8').replace('nine', '9').replace('ten', '10');
     };

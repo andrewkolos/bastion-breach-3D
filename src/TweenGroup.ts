@@ -1,5 +1,3 @@
-import {isUndefined} from "typescript-collections/dist/lib/util";
-
 export class TweenGroup {
 
     private tcount: number;
