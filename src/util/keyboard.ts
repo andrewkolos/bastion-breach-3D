@@ -1,5 +1,3 @@
-import * as $ from "jquery";
-
 export default new class {
     public readonly A = 65;
     public readonly B = 66;
@@ -52,7 +50,7 @@ export default new class {
             this.onKeyDown(event.keyCode);
         }, false);
 
-        $(window).mousedown((event) => {
+        window.addEventListener('mousedown', (event) => {
             switch (event.which) {
                 case 1:
                     this.lmbDown = true;
@@ -68,7 +66,7 @@ export default new class {
             }
         });
 
-        $(window).mouseup((event) => {
+        window.addEventListener('mouseup', (event) => {
             switch (event.which) {
                 case 1:
                     this.lmbDown = false;

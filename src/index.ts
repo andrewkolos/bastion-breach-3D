@@ -1,65 +1,68 @@
-import $ = require('jquery');
-import 'jquery-ui/ui/widgets/slider'
-import {Stage} from "./render";
-import {ResourceManager} from "./resources";
+import { Stage } from "./render";
+import { ResourceManager } from "./resources";
+import noUiSlider from 'nouislider';
+import TWEEN from '@tweenjs/tween.js';
+import 'nouislider/distribute/nouislider.css';
 
 let stage;
-declare let noUiSlider: any;
-declare let TWEEN: any;
+
+const el = document.getElementById.bind(document);
 
 document.body.onload = () => {
 
-    let modal = $('#modal');
-    let playButton = $('#clickToPlay');
+    let modal = el('modal');
+    let playButton = el('clickToPlay');
     let resources = new ResourceManager();
     let playButtonActive = true;
 
     resources.loadResources().then(() => {
-        playButton.addClass('whiteBorder');
-        playButton.html('Play');
-        playButton.css('cursor', 'pointer');
+        playButton.classList.add('whiteBorder');
+        playButton.innerHTML = 'Play';
+        playButton.style.cursor = 'pointer';
 
         stage = new Stage(resources);
         stage.setVolume(0.5);
         stage.init();
         stage.start();
 
-        playButton.on('click', () => {
+        playButton.addEventListener('click', () => {
             if (playButtonActive) {
                 stage.playing = true;
-                let opacity = {value: 1};
-                new TWEEN.Tween(opacity).to({value: 0}, 500)
+                let opacity = { value: 1 };
+                new TWEEN.Tween(opacity).to({ value: 0 }, 500)
                     .easing(TWEEN.Easing.Cubic.Out)
                     .onUpdate(function () {
-                        modal.css('opacity', opacity.value);
+                        modal.style.opacity = String(opacity.value);
                     })
                     .onComplete(function () {
-                        modal.css('display', 'none');
+                        modal.style.display = 'none';
                     }).start();
                 playButtonActive = false;
             }
         });
     });
 
-    $('#resetButton').click(() => {
+    el('resetButton').addEventListener('click', () => {
         stage.resetGame();
         $('#score').html("Player: 0 &nbsp; Computer: 0");
         $('#message').css('opacity', '0');
     });
 
-    $('#showRules').click(() => {
+    el('showRules').addEventListener('click', () => {
         stage.playing = false;
-        let opacity = {value: 0};
-        modal.css('display', 'block');
-        new TWEEN.Tween(opacity).to({value: 1}, 500)
+        let opacity = { value: 0 };
+        modal.style.display = 'block';
+        new TWEEN.Tween(opacity).to({ value: 1 }, 500)
             .easing(TWEEN.Easing.Cubic.Out)
             .onUpdate(function () {
-                modal.css('opacity', opacity.value);
+                modal.style.opacity = String(opacity.value);
             }).start();
         playButtonActive = true;
     });
 
-    noUiSlider.create($('#volumeSlider')[0], {
+    const volumeSliderElement = el('volumeSlider');
+    const volumeNumberElement = el('volume');
+    noUiSlider.create(volumeSliderElement, {
         start: [50],
         connect: [true, false],
         orientation: 'horizontal',
@@ -71,11 +74,11 @@ document.body.onload = () => {
             'max': 100
         }
     });
-    $('#volume').html('50');
-    (<any>$('#volumeSlider')[0]).noUiSlider.on('update', function (values, handle) {
+    volumeNumberElement.textContent = '50';
+    (volumeSliderElement as any).noUiSlider.on('update', function (values, _handle) {
         if (stage)
             stage.setVolume(values[0] / 100);
-        $('#volume').html('' + Math.round(values[0]));
+        volumeNumberElement.textContent = '' + Math.round(values[0]);
     });
 
 };

@@ -1,29 +1,38 @@
 const path = require('path');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
+    mode: 'development',
     entry: './src/index.ts',
-    devtool: "inline-source-map",
-    plugins: [
-        new UglifyJSPlugin()
-    ],
-    module: {
-        loaders: [
-            { test: /\.ts$/, loader: 'ts-loader' }
-        ]
-    },
-    resolve: {
-        extensions: [ ".tsx", ".ts", ".js" ],
-        alias: {
-            'three': path.resolve(path.join(__dirname, 'node_modules', 'three'))
-        }
-    },
     output: {
         filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist')
     },
-
+    plugins: [
+    ],
+    devtool: "inline-source-map",
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: [
+                    'style-loader',
+                    'css-loader',
+                ],
+            },
+            {
+                test: /\.ts$/,
+                loader: 'ts-loader',
+                exclude: /node_modules/,
+            }
+        ],
+    },
+    resolve: {
+        extensions: [ ".tsx", ".ts", ".js" ],
+        // alias: {
+        //     'three': path.resolve(path.join(__dirname, 'node_modules', 'three'))
+        // }
+    },
     devServer: {
-        contentBase: __dirname + "/dist"
+        contentBase: "./dist"
     }
 };

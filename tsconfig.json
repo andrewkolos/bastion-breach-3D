@@ -4,7 +4,9 @@
     "module": "commonjs",
     "sourceMap": true,
     "lib": ["es2015", "dom"],
-    "target": "es5"
+    "target": "es5",
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   },
   "include": [
     "./src/**/*"

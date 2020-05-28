@@ -1,14 +1,10 @@
-import {ResourceManager} from "./resources";
+import { ResourceManager } from "./resources";
 import * as THREE from 'three';
-import {OrbitControls} from "three-orbitcontrols-ts"
-import {Card, Deck, FACE, NUMERICAL, ROYALTY, SUIT} from "./deck";
-import {AxisHelper, Intersection, Object3D} from "three";
-import $ = require('jquery');
-import {Sound} from "./sounds";
-import {TweenGroup} from "./TweenGroup";
-
-declare let TWEEN: any;
-
+import { Card, Deck, FACE, NUMERICAL, ROYALTY, SUIT } from "./deck";
+import { Object3D } from "three";
+import { Sound } from "./sounds";
+import { TweenGroup } from "./TweenGroup";
+import TWEEN from '@tweenjs/tween.js';
 
 export class Stage {
 
@@ -217,14 +213,14 @@ export class Stage {
             let opponentObject = this.computerHand.objects()[Math.floor(Math.random() * this.computerHand.size())]; // get random opponent card
 
             new TweenGroup(this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, 0.5, 0)), new THREE.Euler(Math.PI / 2, 0, 0), 200, 0), () => {
-               new TweenGroup(this.moveCard(opponentObject, currentNeutralObject.position.clone().add(new THREE.Vector3(0, 0, -(726 / 500) - 0.02)), new THREE.Euler(Math.PI / 2, 0, 0), 600, 600), () => {
-                   this.cardFlipSound.play();
-                   new TweenGroup(this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Euler(-Math.PI / 2), 200, 200), () => {
-                       new TweenGroup(this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, -1, 0)), opponentObject.rotation, 200, 0), () => {
+                new TweenGroup(this.moveCard(opponentObject, currentNeutralObject.position.clone().add(new THREE.Vector3(0, 0, -(726 / 500) - 0.02)), new THREE.Euler(Math.PI / 2, 0, 0), 600, 600), () => {
+                    this.cardFlipSound.play();
+                    new TweenGroup(this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Euler(-Math.PI / 2), 200, 200), () => {
+                        new TweenGroup(this.moveCard(opponentObject, opponentObject.position.clone().add(new THREE.Vector3(0, -1, 0)), opponentObject.rotation, 200, 0), () => {
 
-                       }).start();
-                   }).start();
-               }).start();
+                        }).start();
+                    }).start();
+                }).start();
             }).start();
             let opponentCard = this.computerHand.getCard(opponentObject);
             this.computerHand.deleteByObject(opponentObject);
@@ -238,8 +234,8 @@ export class Stage {
                 object.position.copy(currentNeutralObject.position.clone().add(new THREE.Vector3(0, 0.02, 0)));
                 object.rotation.set(-Math.PI / 2, 0, 0);
                 this.scene.add(object);
-                let opacity = {value: 0};
-                new TWEEN.Tween(opacity).to({value: op}, 700)
+                let opacity = { value: 0 };
+                new TWEEN.Tween(opacity).to({ value: op }, 700)
                     .easing(TWEEN.Easing.Cubic.Out)
                     .onUpdate(function () {
                         if (object instanceof THREE.Mesh) { // circle
@@ -272,7 +268,7 @@ export class Stage {
             }
 
             setTimeout(() => {
-                $('#score').html('Player: ' + this.playerScore + ' &nbsp; Computer: ' + this.computerScore);
+                document.getElementById('score').textContent = ('Player: ' + this.playerScore + ' &nbsp; Computer: ' + this.computerScore);
             }, 1240);
 
             if (this.playerHand.size() === 0) {
@@ -285,19 +281,17 @@ export class Stage {
                     winnerString = "Draw!";
                 }
 
-                let messageElement = $('#message');
-                let opacity = {value: 0};
-                messageElement.html(winnerString + " " + this.playerScore + " – " + this.computerScore);
+                let messageElement = document.getElementById('message');
+                let opacity = { value: 0 };
+                messageElement.textContent = (winnerString + " " + this.playerScore + " – " + this.computerScore);
                 setTimeout(() => {
-                    new TWEEN.Tween(opacity).to({value: 0.9}, 500)
+                    new TWEEN.Tween(opacity).to({ value: 0.9 }, 500)
                         .easing(TWEEN.Easing.Cubic.Out)
-                        .onUpdate( () => {
+                        .onUpdate(() => {
                             if (this.playerHand.size() === 0)
-                                messageElement.css('opacity', opacity.value);
+                                messageElement.style.opacity = String(opacity.value);
                         }).start()
                 }, 1300);
-
-
             }
         }
     };
@@ -329,9 +323,9 @@ export class Stage {
         if (intersections.length > 0 && this.playing && this.readyToPlay) {
             let card = intersections[0].object.parent;
             this.selectedCard = card;
-            $('body').css('cursor', 'pointer');
+            document.body.style.cursor = 'pointer';
         } else {
-            $('body').css('cursor', 'default');
+            document.body.style.cursor = 'default';
         }
     };
 
@@ -383,7 +377,7 @@ export class Stage {
     }
 
     private initRenderer() {
-        this.renderer = new THREE.WebGLRenderer({antialias: true});
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setClearColor(0x111111, 1.0);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
@@ -418,7 +412,7 @@ export class Stage {
 
     private initGround() {
         let geometry = new THREE.PlaneGeometry(70, 70);
-        let material = new THREE.MeshPhongMaterial({map: this.resources.grassTexture});
+        let material = new THREE.MeshPhongMaterial({ map: this.resources.grassTexture });
         let mesh = new THREE.Mesh(geometry, material);
         mesh.rotateX(-Math.PI / 2);
         mesh.position.set(0, -1.65, 0);
@@ -479,16 +473,16 @@ export class Stage {
     }
 
     private moveCard(object: THREE.Object3D, pos: THREE.Vector3, rot: THREE.Euler, posDuration: number, rotDuration: number) {
-        let position = {x: object.position.x, y: object.position.y, z: object.position.z};
-        let targetPosition = {x: pos.x, y: pos.y, z: pos.z};
+        let position = { x: object.position.x, y: object.position.y, z: object.position.z };
+        let targetPosition = { x: pos.x, y: pos.y, z: pos.z };
 
         let tween1 = new TWEEN.Tween(position).to(targetPosition, posDuration)
             .easing(TWEEN.Easing.Quadratic.Out)
             .onUpdate(function () {
                 object.position.set(position.x, position.y, position.z);
             });
-        let rotation = {x: object.rotation.x, y: object.rotation.y, z: object.rotation.y};
-        let targetRotation = {x: rot.x, y: rot.y, z: rot.z};
+        let rotation = { x: object.rotation.x, y: object.rotation.y, z: object.rotation.y };
+        let targetRotation = { x: rot.x, y: rot.y, z: rot.z };
         let tween2 = new TWEEN.Tween(rotation).to(targetRotation, rotDuration)
             .easing(TWEEN.Easing.Quadratic.Out)
             .onUpdate(function () {
@@ -620,7 +614,7 @@ class PhysicalDeck {
         return this.map.size;
     }
 
-    set (card: Card, object: Object3D) {
+    set(card: Card, object: Object3D) {
         this.map.set(card, object);
         this.imap.set(object, card);
     }

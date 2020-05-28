@@ -1,5 +1,4 @@
 import THREE = require('three');
-import $ = require('jquery');
 
 export class ResourceManager {
 
