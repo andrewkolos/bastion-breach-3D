@@ -13,5 +13,9 @@ module.exports = {
     // Place to specify ESLint rules. Can be used to overwrite rules specified from the extended configs
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/explicit-member-accessibility': ['error', { accessibility: 'explicit' }],
+    '@typescript-eslint/no-namespace': 'off',
+    '@typescript-eslint/prefer-readonly': 'error',
+    curly: 'error',
   },
 };
