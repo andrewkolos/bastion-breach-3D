@@ -1,6 +1,5 @@
 export enum Rank {
-  Ace = 0,
-  Two,
+  Two = 0,
   Three,
   Four,
   Five,
@@ -12,6 +11,7 @@ export enum Rank {
   Jack,
   Queen,
   King,
+  Ace
 }
 
 export function isNumerical(value: Rank): boolean {
