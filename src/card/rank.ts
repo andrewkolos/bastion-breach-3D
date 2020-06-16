@@ -1,17 +1,17 @@
 export class Rank {
-  public static readonly Two = new Rank('2');
-  public static readonly Three = new Rank('3');
-  public static readonly Four = new Rank('4');
-  public static readonly Five = new Rank('5');
-  public static readonly Six = new Rank('6');
-  public static readonly Seven = new Rank('7');
-  public static readonly Eight = new Rank('8');
-  public static readonly Nine = new Rank('9');
-  public static readonly Ten = new Rank('10');
-  public static readonly Jack = new Rank('J', true);
-  public static readonly Queen = new Rank('Q', true);
-  public static readonly King = new Rank('K', true);
-  public static readonly Ace = new Rank('A');
+  public static readonly Two = new Rank('two', '2');
+  public static readonly Three = new Rank('three', '3');
+  public static readonly Four = new Rank('four', '4');
+  public static readonly Five = new Rank('five', '5');
+  public static readonly Six = new Rank('six', '6');
+  public static readonly Seven = new Rank('seven', '7');
+  public static readonly Eight = new Rank('eight', '8');
+  public static readonly Nine = new Rank('nine', '9');
+  public static readonly Ten = new Rank('ten', '10');
+  public static readonly Jack = new Rank('jack', 'J', true);
+  public static readonly Queen = new Rank('queen', 'Q', true);
+  public static readonly King = new Rank('king', 'K', true);
+  public static readonly Ace = new Rank('ace','A');
 
   /**
    * Returns an array containing each rank value exactly once and in standard order with
@@ -25,14 +25,8 @@ export class Rank {
     return Rank.all()[Symbol.iterator];
   }
 
-  public get name(): string {
-    Object.entries(Rank).forEach(([propName, value]) => {
-      if (value === this) {
-        return propName;
-      }
-    });
-
-    throw Error('Unable to find rank value in the list of values.');
+  public get isNumeric(): boolean {
+    return this.isFace === false && this !== Rank.Ace;
   }
 
   public beats(other: Rank | Rank[]): boolean {
@@ -55,5 +49,26 @@ export class Rank {
     });
   }
 
-  private constructor(public readonly abbreviation: string, private readonly isFace: boolean = false) {}
+  private constructor(
+    public readonly name: RankName,
+    public readonly abbreviation: RankAbbreviation,
+    private readonly isFace: boolean = false,
+  ) {}
 }
+
+export type RankAbbreviation = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A';
+
+export type RankName =
+  | 'two'
+  | 'three'
+  | 'four'
+  | 'five'
+  | 'six'
+  | 'seven'
+  | 'eight'
+  | 'nine'
+  | 'ten'
+  | 'jack'
+  | 'queen'
+  | 'king'
+  | 'ace';
