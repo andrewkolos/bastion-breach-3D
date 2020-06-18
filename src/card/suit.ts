@@ -8,10 +8,17 @@ export class Suit {
     return Object.values(Suit).filter((value) => value instanceof Suit);
   }
 
-  public static [Symbol.iterator]() {
-    return Suit.all()[Symbol.iterator];
+  public static [Symbol.iterator](): IterableIterator<Suit> {
+    return Suit.all()[Symbol.iterator]();
   }
 
+  public toString() {
+    return capitalize(this.name);
+
+    function capitalize(word: string) {
+      return word.slice(0, 1).toUpperCase() + word.slice(1);
+    }
+  }
   private constructor(public readonly name: SuitName, public readonly unicodeSymbol: string) {}
 }
 

@@ -22,7 +22,7 @@ export class Rank {
   }
 
   public static [Symbol.iterator]() {
-    return Rank.all()[Symbol.iterator];
+    return Rank.all()[Symbol.iterator]();
   }
 
   public get isNumeric(): boolean {
@@ -47,6 +47,14 @@ export class Rank {
 
       return allRanksButAce.indexOf(this) > allRanksButAce.indexOf(o);
     });
+  }
+
+  public toString() {
+    return capitalize(this.name);
+
+    function capitalize(word: string) {
+      return word.slice(0, 1).toUpperCase() + word.slice(1);
+    }
   }
 
   private constructor(
