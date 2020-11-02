@@ -3,39 +3,49 @@ import { Rank } from '../card/rank';
 import { cloneDumbObject } from '@akolos/clone-dumb-object';
 import { MatchupWinner } from './matchup-winner';
 import { GameAdvancementOutcome } from './game-advancement-outcome';
-
-enum Player {
-  P1,
-  P2,
-}
+import { Player } from './Player';
+import { GameCardCollection } from './game-card-collection';
+import { InheritableEventEmitter } from '@akolos/event-emitter';
+import { Matchup } from './matchup';
 
 interface Score {
   p1: number;
   p2: number;
 }
 
-export interface GameCards {
-  onBoard: {
-    p1: Rank[];
-    p2: Rank[];
-    neutral: Rank[];
-  };
-  inHand: {
-    p1: Rank[];
-    p2: Rank[];
-  };
-}
+type DeepReadonly<T> = T extends Function ? T :
+  T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]> } :
+  T;
 
 export interface GameConfig {
   neutralBoard?: Rank[];
 }
 
-export class Game {
+export interface GameEvents {
+  advanced: (p1Card: Rank, p2Card: Rank, outcome: GameAdvancementOutcome) => void;
+}
+
+export class Game extends InheritableEventEmitter<GameEvents> {
   private nextMatchupValue: number;
   private _score: Score;
-  private _cards: GameCards;
+  private _matchups: Matchup[] = [];
+  private _cards: GameCardCollection<Rank>;
+
+  public get score(): Readonly<Score> {
+    return cloneDumbObject(this._score);
+  }
+
+  public get cards(): DeepReadonly<GameCardCollection<Rank>> {
+    return cloneDumbObject(this._cards);
+  }
+
+  public get matchups(): Array<Readonly<Matchup>> {
+    return this._matchups.slice();
+  }
 
   public constructor(config: GameConfig = {}) {
+    super();
+
     const { neutralBoard: configBoard } = config;
     if (configBoard != null) {
       validateNeutralBoard(configBoard);
@@ -68,36 +78,44 @@ export class Game {
     }
   }
 
-  public get score(): Readonly<Score> {
-    return cloneDumbObject(this._score);
-  }
-
-  public get cards(): Readonly<GameCards> {
-    return cloneDumbObject(this._cards);
-  }
-
   public advance({ p1Card, p2Card }: { p1Card: Rank; p2Card: Rank }): GameAdvancementOutcome {
+
+    const outcome: GameAdvancementOutcome = this.advanceGameState(p1Card, p2Card);
+
+    this._matchups.push({
+      p1Card,
+      p2Card,
+      neutralCard: outcome.neutralCard,
+      matchupWinner: outcome.matchupWinner,
+    });
+
+    this.emit('advanced', p1Card, p2Card, outcome);
+
+    return outcome;
+  }
+
+  private advanceGameState(p1Card: Rank, p2Card: Rank) {
     const nextNeutralCard = this._cards.onBoard.neutral[this._cards.onBoard.p1.length];
 
     this.moveCardToBoard(Player.P1, p1Card);
     this.moveCardToBoard(Player.P2, p2Card);
 
-    const winner = determineMatchupWinner({ p1: p1Card, neutral: nextNeutralCard, p2: p2Card });
+    const matchupWinner = determineMatchupWinner({ p1: p1Card, neutral: nextNeutralCard, p2: p2Card });
+    const winnerScoreIncrease = matchupWinner === MatchupWinner.None ? 0 : this.nextMatchupValue;
+    const outcome: GameAdvancementOutcome = {
+      neutralCard: nextNeutralCard,
+      matchupWinner,
+      winnerScoreIncrease,
+    };
 
-    if (winner === MatchupWinner.None) {
+    if (matchupWinner === MatchupWinner.None) {
       this.nextMatchupValue += 1;
-      return {
-        matchupWinner: winner,
-      };
     } else {
-      const pointsWon = this.nextMatchupValue;
-      this.awardPoints(winner, pointsWon);
+      this.awardPoints(matchupWinner, this.nextMatchupValue);
       this.nextMatchupValue = 1;
-      return {
-        matchupWinner: winner,
-        winnerScoreIncease: pointsWon,
-      };
     }
+
+    return outcome;
   }
 
   private moveCardToBoard(player: Player, rank: Rank) {

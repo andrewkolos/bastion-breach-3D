@@ -1,26 +1,28 @@
-import { ResourceManager } from './resources';
 import * as THREE from 'three';
-import { Card, Deck, FACE, NUMERICAL, ROYALTY, SUIT } from './deck';
+import { Card } from './card/card';
+import { Suit } from './card/suit';
+import { Rank } from './card/rank';
 import { Object3D } from 'three';
 import { Sound } from './sounds';
 import { TweenGroup } from './TweenGroup';
-import TWEEN from '@tweenjs/tween.js';
+import TWEEN, { Tween } from '@tweenjs/tween.js';
+import { Resources } from 'resources';
 
 export class Stage {
-  camera: THREE.PerspectiveCamera;
-  scene: THREE.Scene;
-  renderer: THREE.WebGLRenderer;
-  resources: ResourceManager;
+  private camera!: THREE.PerspectiveCamera;
+  private scene!: THREE.Scene;
+  renderer!: THREE.WebGLRenderer;
+  resources: Resources;
   rendering = false;
   mouseVector = new THREE.Vector3();
   raycaster = new THREE.Raycaster();
-  selectedCard: THREE.Object3D;
+  hoveredCard: THREE.Object3D | undefined | null;
 
-  playerHand: PhysicalDeck;
-  playerBoard: PhysicalDeck;
-  neutralBoard: PhysicalDeck;
-  computerHand: PhysicalDeck;
-  computerBoard: PhysicalDeck;
+  playerHand!: PhysicalDeck;
+  playerBoard!: PhysicalDeck;
+  neutralBoard!: PhysicalDeck;
+  computerHand!: PhysicalDeck;
+  computerBoard!: PhysicalDeck;
   indicators = new Array<THREE.Object3D>();
 
   playerScore = 0;
@@ -31,13 +33,12 @@ export class Stage {
   drawCardSound = new Sound(new Audio('sound/drawcard.mp3'), 0.6, 10);
   musicSound = new Sound(new Audio('sound/quadproquo.mp3'), 0.3, 1);
 
-  firstClickFlag = true;
-  indicatorTimeouts = [];
+  indicatorTimeouts: NodeJS.Timeout[] = []; // timeouts to wait to place win/loss/tie indicators ontop of cards
 
   playing = false; // player can play cards
-  private readyToPlay = false; // similar to playing but for internal use
+  private readyToPlay = false; // cards are dealt and can accept player input
 
-  constructor(resources: ResourceManager) {
+  constructor(resources: Resources) {
     this.resources = resources;
     this.musicSound.addEventListener('timeupdate', () => {
       const buffer = 0.2;
@@ -74,19 +75,18 @@ export class Stage {
     this.computerScore = 0;
     this.nextScore = 1;
 
-    this.firstClickFlag = true;
     this.indicatorTimeouts.forEach((t) => clearTimeout(t));
 
-    this.createCards(SUIT.SPADES, SUIT.DIAMONDS, SUIT.HEARTS);
+    this.createCards(Suit.Spades, Suit.Diamonds, Suit.Hearts);
   }
 
-  init(): void {
+  public init(): void {
     this.scene = new THREE.Scene();
     this.scene.fog = new THREE.Fog(0xffffff, 0.1, 50);
     this.initLights();
     this.initCamera();
     this.initRenderer();
-    this.createCards(SUIT.SPADES, SUIT.DIAMONDS, SUIT.HEARTS);
+    this.createCards(Suit.Spades, Suit.Diamonds, Suit.Hearts);
     this.initTableObject();
     this.initGround();
 
@@ -102,72 +102,98 @@ export class Stage {
   private mouseup = () => {
     const determineWinner = (player: Card, computer: Card, neutral: Card) => {
       // handle someone having ace
-      if (player.face === FACE.ACE) {
-        if (NUMERICAL.indexOf(neutral.face) > -1) {
-          if (NUMERICAL.indexOf(computer.face) > -1) {
-            if (computer.face > neutral.face) return computer;
-            else return neutral;
+      if (player.rank === Rank.Ace) {
+        if (neutral.isNumeric) {
+          if (computer.isNumeric) {
+            if (computer.rank > neutral.rank) {
+              return computer;
+            } else {
+              return neutral;
+            }
           }
-          if (ROYALTY.indexOf(computer.face) > -1) return neutral;
-        }
-        if (ROYALTY.indexOf(neutral.face) > -1) {
-          if (NUMERICAL.indexOf(computer.face) > -1) return neutral;
-          if (ROYALTY.indexOf(computer.face) > -1) return player;
-          return neutral;
-        }
-        if (computer.face == FACE.ACE) return neutral;
-      }
-
-      if (computer.face === FACE.ACE) {
-        if (NUMERICAL.indexOf(neutral.face) > -1) {
-          if (NUMERICAL.indexOf(player.face) > -1) {
-            if (player.face > neutral.face) return player;
-            else return neutral;
-          }
-          if (ROYALTY.indexOf(player.face) > -1) return neutral;
-        }
-        if (ROYALTY.indexOf(neutral.face) > -1) {
-          if (NUMERICAL.indexOf(player.face) > -1) return neutral;
-          if (ROYALTY.indexOf(player.face) > -1) return computer;
-          return neutral;
-        }
-        if (player.face == FACE.ACE) return neutral;
-      }
-
-      if (neutral.face === FACE.ACE) {
-        if (NUMERICAL.indexOf(player.face) > -1) {
-          if (NUMERICAL.indexOf(computer.face) > -1) {
-            if (player.face > computer.face) return player;
-            else if (computer.face > player.face) return computer;
-            return neutral;
-          }
-          if (ROYALTY.indexOf(computer.face) > -1) {
+          if (computer.isFace) {
             return neutral;
           }
         }
-        if (ROYALTY.indexOf(player.face) > -1) {
-          if (NUMERICAL.indexOf(computer.face) > -1) return neutral;
-          if (ROYALTY.indexOf(computer.face) > -1) return neutral;
+        if (neutral.isFace) {
+          if (computer.isNumeric) {
+            return neutral;
+          }
+          if (computer.isFace) {
+            return player;
+          }
+          return neutral;
         }
-
-        if (player.face === FACE.ACE) return neutral;
+        if (computer.rank == Rank.Ace) {
+          return neutral;
+        }
       }
 
-      if (player.face > computer.face && player.face > neutral.face) {
+      if (computer.rank === Rank.Ace) {
+        if (neutral.isNumeric) {
+          if (player.isNumeric) {
+            if (player.rank > neutral.rank) {
+              return player;
+            } else {
+              return neutral;
+            }
+          }
+          if (player.isFace) {
+            return neutral;
+          }
+        }
+        if (neutral.isFace) {
+          if (player.isNumeric) {
+            return neutral;
+          }
+          if (player.isFace) {
+            return computer;
+          }
+          return neutral;
+        }
+        if (player.rank == Rank.Ace) {
+          return neutral;
+        }
+      }
+
+      if (neutral.rank === Rank.Ace) {
+        if (player.isNumeric) {
+          if (computer.isNumeric) {
+            if (player.rank > computer.rank) {
+              return player;
+            } else if (computer.rank > player.rank) {
+              return computer;
+            }
+            return neutral;
+          }
+          if (computer.isFace) {
+            return neutral;
+          }
+        }
+        if (player.isFace) {
+          if (computer.isNumeric) {
+            return neutral;
+          }
+          if (computer.isFace) {
+            return neutral;
+          }
+        }
+
+        if (player.rank === Rank.Ace) {
+          return neutral;
+        }
+      }
+
+      if (player.rank > computer.rank && player.rank > neutral.rank) {
         return player;
       }
-      if (computer.face > player.face && computer.face > neutral.face) {
+      if (computer.rank > player.rank && computer.rank > neutral.rank) {
         return computer;
       }
       return neutral;
     };
 
-    if (this.firstClickFlag) {
-      this.firstClickFlag = false;
-      return;
-    }
-
-    const playerObject = this.selectedCard;
+    const playerObject = this.hoveredCard;
     if (this.playing && this.readyToPlay && playerObject) {
       this.drawCardSound.play();
 
@@ -218,6 +244,11 @@ export class Stage {
       ).start();
 
       const playerCard = this.playerHand.getCard(playerObject);
+
+      if (playerCard == null) {
+        throw Error('Could not find player card.');
+      }
+
       this.playerHand.deleteByObject(playerObject);
       this.playerBoard.set(playerCard, playerObject);
       new TweenGroup(
@@ -279,6 +310,9 @@ export class Stage {
         },
       ).start();
       const opponentCard = this.computerHand.getCard(opponentObject);
+      if (opponentCard == null) {
+        throw Error('Could not find opponent card object 3d.');
+      }
       this.computerHand.deleteByObject(opponentObject);
       this.computerBoard.set(opponentCard, opponentObject);
       new TweenGroup(
@@ -293,6 +327,9 @@ export class Stage {
       ).start();
 
       const currentNeutralCard = this.neutralBoard.getCard(currentNeutralObject);
+      if (currentNeutralCard == null) {
+        throw Error('Could not find neutral card object 3d.');
+      }
 
       const winner = determineWinner(playerCard, opponentCard, currentNeutralCard);
       const placeIndicator = (object: THREE.Object3D, op: number) => {
@@ -341,19 +378,21 @@ export class Stage {
       }
 
       setTimeout(() => {
-        document.getElementById('score').textContent =
+        document.getElementById('score')!.innerHTML =
           'Player: ' + this.playerScore + ' &nbsp; Computer: ' + this.computerScore;
       }, 1240);
 
       if (this.playerHand.size() === 0) {
         let winnerString = '';
-        if (this.computerScore > this.playerScore) winnerString = 'Computer wins.';
-        else if (this.playerScore > this.computerScore) winnerString = 'Player wins!';
-        else {
+        if (this.computerScore > this.playerScore) {
+          winnerString = 'Computer wins.';
+        } else if (this.playerScore > this.computerScore) {
+          winnerString = 'Player wins!';
+        } else {
           winnerString = 'Draw!';
         }
 
-        const messageElement = document.getElementById('message');
+        const messageElement = document.getElementById('message')!;
         const opacity = { value: 0 };
         messageElement.textContent = winnerString + ' ' + this.playerScore + ' – ' + this.computerScore;
         setTimeout(() => {
@@ -361,7 +400,9 @@ export class Stage {
             .to({ value: 0.9 }, 500)
             .easing(TWEEN.Easing.Cubic.Out)
             .onUpdate(() => {
-              if (this.playerHand.size() === 0) messageElement.style.opacity = String(opacity.value);
+              if (this.playerHand.size() === 0) {
+                messageElement.style.opacity = String(opacity.value);
+              }
             })
             .start();
         }, 1300);
@@ -391,11 +432,11 @@ export class Stage {
 
     const intersections = this.raycaster.intersectObjects(this.playerHand.objects(), true);
 
-    this.selectedCard = null;
+    this.hoveredCard = null;
 
     if (intersections.length > 0 && this.playing && this.readyToPlay) {
       const card = intersections[0].object.parent;
-      this.selectedCard = card;
+      this.hoveredCard = card;
       document.body.style.cursor = 'pointer';
     } else {
       document.body.style.cursor = 'default';
@@ -466,12 +507,14 @@ export class Stage {
 
   private initTableObject() {
     const object = this.resources.table;
-    const applyTexture = (obj) => {
+    const applyTexture = (obj: THREE.Object3D) => {
       obj.receiveShadow = true;
       if (obj instanceof THREE.Mesh) {
         (obj.material as THREE.MeshPhongMaterial).map = this.resources.woodTexture;
       }
-      if (obj instanceof THREE.Object3D) obj.children.forEach((c) => applyTexture(c));
+      if (obj instanceof THREE.Object3D) {
+        obj.children.forEach((c) => applyTexture(c));
+      }
     };
     applyTexture(object.children[0]);
     object.scale.set(4, 1, 3.2);
@@ -493,18 +536,19 @@ export class Stage {
     this.scene.add(mesh);
   }
 
-  private createCards(boardSuit: SUIT, playerSuit: SUIT, computerSuit: SUIT) {
-    const buildHand = (suit: SUIT, shuffle?: boolean) => {
+  private createCards(boardSuit: Suit, playerSuit: Suit, computerSuit: Suit) {
+    const buildHand = (suit: Suit, shuffle?: boolean) => {
       const hand = new PhysicalDeck();
-      const deck = new Deck();
+      const cards = Card.allRanksOfSuit(suit);
 
-      deck.cards = deck.cards.filter((c) => c.suit === suit);
-      deck.cards.forEach((c: Card) => {
-        const object = createCardObject(this.resources, c);
+      cards.forEach((c: Card) => {
+        const object = createCardObject3d(this.resources, c);
         hand.set(c, object);
       });
 
-      if (shuffle) hand.shuffle();
+      if (shuffle) {
+        hand.shuffle();
+      }
 
       return hand;
     };
@@ -567,7 +611,7 @@ export class Stage {
     const start = new THREE.Vector3(-(cards.length + cards.length * padding.x) / 2.0 + 0.6, pos.y, pos.z);
 
     let currentPosition = start;
-    let tweens = [];
+    let tweens: Tween<{x: number, y: number, z: number}>[] = [];
     cards.forEach((card) => {
       const targetPosition = new THREE.Vector3(pos.x + currentPosition.x, currentPosition.y, currentPosition.z);
       tweens = tweens.concat(this.moveCard(card, targetPosition, rot, posDuration, rotDuration));
@@ -733,27 +777,31 @@ class PhysicalDeck {
     return this.map.has(card);
   }
 
-  hasByObject(object: Object3D) {
+  hasByObject(object: Object3D): boolean {
     return this.imap.has(object);
   }
 
   deleteByCard(card: Card) {
     const obj = this.map.get(card);
     this.map.delete(card);
-    this.imap.delete(obj);
+    if (obj != null) {
+      this.imap.delete(obj);
+    }
   }
 
   deleteByObject(object: Object3D) {
     const card = this.imap.get(object);
     this.imap.delete(object);
-    this.map.delete(card);
+    if (card != null) {
+      this.map.delete(card);
+    }
   }
 
-  getObject(card: Card): Object3D {
+  getObject(card: Card): Object3D | undefined {
     return this.map.get(card);
   }
 
-  getCard(object: Object3D): Card {
+  getCard(object: Object3D): Card | undefined {
     return this.imap.get(object);
   }
 
@@ -761,13 +809,13 @@ class PhysicalDeck {
     const newMap = new Map<Card, Object3D>();
     const newIMap = new Map<Object3D, Card>();
     const keys = [] as Card[];
-    this.map.forEach((value: THREE.Object3D, key: Card) => {
+    this.map.forEach((_value: THREE.Object3D, key: Card) => {
       keys.push(key);
     });
     this.shuffleArray(keys);
     keys.forEach((key) => {
-      newMap.set(key, this.map.get(key));
-      newIMap.set(this.map.get(key), key);
+      newMap.set(key, this.map.get(key)!);
+      newIMap.set(this.map.get(key)!, key);
     });
     this.map.clear();
     newMap.forEach((value: THREE.Object3D, key: Card) => {
@@ -796,26 +844,10 @@ class PhysicalDeck {
   }
 }
 
-function createCardObject(resources: ResourceManager, card: Card): THREE.Object3D {
-  const replaceStringWithNumber = (str: string) => {
-    // not exactly efficient but nice and short
-    return str
-      .replace('one', '1')
-      .replace('two', '2')
-      .replace('three', '3')
-      .replace('four', '4')
-      .replace('five', '5')
-      .replace('six', '6')
-      .replace('seven', '7')
-      .replace('eight', '8')
-      .replace('nine', '9')
-      .replace('ten', '10');
-  };
-
-  const imageName = replaceStringWithNumber(FACE[card.face].toLowerCase()) + '_of_' + SUIT[card.suit].toLowerCase();
+function createCardObject3d(resources: Resources, card: Card): THREE.Object3D {
   const frontGeometry = new THREE.PlaneGeometry(500 / 500, 726 / 500);
   const backGeometry = frontGeometry.clone();
-  const frontTexture = (resources.cardTextures as any)[imageName];
+  const frontTexture = resources.getCardFrontTexture(card);
   frontTexture.minFilter = THREE.LinearFilter;
   frontTexture.magFilter = THREE.LinearFilter;
 
@@ -838,7 +870,7 @@ function createCardObject(resources: ResourceManager, card: Card): THREE.Object3
   const backMesh = new THREE.Mesh(backGeometry, backMaterial);
   backMesh.castShadow = true;
 
-  object.name = imageName;
+  object.name = card.name;
   object.add(frontMesh);
   object.add(backMesh);
   object.castShadow = true;

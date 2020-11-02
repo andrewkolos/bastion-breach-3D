@@ -1,20 +1,18 @@
 import { Stage } from './render';
-import { ResourceManager } from './resources';
+import { Resources } from './resources';
 import noUiSlider from 'nouislider';
 import TWEEN from '@tweenjs/tween.js';
 import 'nouislider/distribute/nouislider.css';
 
 let stage: Stage;
 
-const el = document.getElementById.bind(document);
-
 document.body.onload = () => {
-  const modal = el('modal');
-  const playButton = el('clickToPlay');
-  const resources = new ResourceManager();
+  const modal = getElementByIdOrThrow('modal');
+  const playButton = getElementByIdOrThrow('clickToPlay');
+
   let playButtonActive = true;
 
-  resources.loadResources().then(() => {
+  Resources.load().then((resources) => {
     playButton.classList.add('whiteBorder');
     playButton.innerHTML = 'Play';
     playButton.style.cursor = 'pointer';
@@ -43,13 +41,13 @@ document.body.onload = () => {
     });
   });
 
-  el('resetButton').addEventListener('click', () => {
+  getElementByIdOrThrow('resetButton').addEventListener('click', () => {
     stage.resetGame();
-    $('#score').html('Player: 0 &nbsp; Computer: 0');
-    $('#message').css('opacity', '0');
+    getElementByIdOrThrow('score').innerHTML = 'Player: 0 &nbsp; Computer: 0';
+    getElementByIdOrThrow('message').style.opacity = '0';
   });
 
-  el('showRules').addEventListener('click', () => {
+  getElementByIdOrThrow('showRules').addEventListener('click', () => {
     stage.playing = false;
     const opacity = { value: 0 };
     modal.style.display = 'block';
@@ -63,13 +61,13 @@ document.body.onload = () => {
     playButtonActive = true;
   });
 
-  const volumeSliderElement = el('volumeSlider');
-  const volumeNumberElement = el('volume');
+  const volumeSliderElement = getElementByIdOrThrow('volumeSlider');
+  const volumeNumberElement = getElementByIdOrThrow('volume');
   noUiSlider.create(volumeSliderElement, {
     start: [50],
     connect: [true, false],
     orientation: 'horizontal',
-    behavior: 'tap-drag',
+    behaviour: 'tap-drag',
     step: 5,
     tooltips: false,
     range: {
@@ -78,8 +76,16 @@ document.body.onload = () => {
     },
   });
   volumeNumberElement.textContent = '50';
-  (volumeSliderElement as any).noUiSlider.on('update', function (values, _handle) {
-    if (stage) stage.setVolume(values[0] / 100);
+  (volumeSliderElement as any).noUiSlider.on('update', function (values: [number]) {
+    stage.setVolume(values[0] / 100);
     volumeNumberElement.textContent = '' + Math.round(values[0]);
   });
 };
+
+function getElementByIdOrThrow(id: string): HTMLElement | never {
+  const el = document.getElementById(id);
+  if (el == null) {
+    throw Error(`Unable to find element with id: ${id}`);
+  }
+  return el;
+}

@@ -1,12 +1,17 @@
+import { Rank } from 'card';
 import { MatchupWinner } from './matchup-winner';
 
-export interface GameAdvancementStalemateOutcome {
+export interface GameAdvancementOutcomeBase {
+  neutralCard: Rank;
+}
+
+export interface GameAdvancementStalemateOutcome extends GameAdvancementOutcomeBase {
   matchupWinner: MatchupWinner.None;
 }
 
-export interface GameAdvancementWinOutcome {
+export interface GameAdvancementWinOutcome extends GameAdvancementOutcomeBase {
   matchupWinner: MatchupWinner.P1 | MatchupWinner.P2;
-  winnerScoreIncease: number;
+  winnerScoreIncrease: number;
 }
 
 export type GameAdvancementOutcome = GameAdvancementStalemateOutcome | GameAdvancementWinOutcome;

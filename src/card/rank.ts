@@ -1,3 +1,5 @@
+import { CardLike } from './card-like';
+
 export class Rank {
   public static readonly Two = new Rank('two', '2');
   public static readonly Three = new Rank('three', '3');
@@ -8,9 +10,9 @@ export class Rank {
   public static readonly Eight = new Rank('eight', '8');
   public static readonly Nine = new Rank('nine', '9');
   public static readonly Ten = new Rank('ten', '10');
-  public static readonly Jack = new Rank('jack', 'J', true);
-  public static readonly Queen = new Rank('queen', 'Q', true);
-  public static readonly King = new Rank('king', 'K', true);
+  public static readonly Jack = new Rank('jack', 'J');
+  public static readonly Queen = new Rank('queen', 'Q');
+  public static readonly King = new Rank('king', 'K');
   public static readonly Ace = new Rank('ace','A');
 
   /**
@@ -21,12 +23,29 @@ export class Rank {
     return Object.values(Rank).filter((value) => value instanceof Rank);
   }
 
+  public static isRank(value: any): value is Rank {
+    return Rank.all().some((rank) => rank === value);
+  }
+
+  public static arrayFromCards(cards: CardLike[]): Rank[] {
+    return cards.map(c => c.rank);
+  }
+
   public static [Symbol.iterator]() {
     return Rank.all()[Symbol.iterator]();
   }
 
+  private constructor(
+    public readonly name: RankName,
+    public readonly abbreviation: RankAbbreviation
+  ) { }
+
   public get isNumeric(): boolean {
-    return this.isFace === false && this !== Rank.Ace;
+    return !this.isFace && this !== Rank.Ace;
+  }
+
+  public get isFace(): boolean {
+    return [Rank.King, Rank.Queen, Rank.Jack].includes(this);
   }
 
   public beats(other: Rank | Rank[]): boolean {
@@ -56,12 +75,6 @@ export class Rank {
       return word.slice(0, 1).toUpperCase() + word.slice(1);
     }
   }
-
-  private constructor(
-    public readonly name: RankName,
-    public readonly abbreviation: RankAbbreviation,
-    private readonly isFace: boolean = false,
-  ) {}
 }
 
 export type RankAbbreviation = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A';

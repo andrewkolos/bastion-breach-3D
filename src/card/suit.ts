@@ -1,8 +1,8 @@
 export class Suit {
-  public static readonly Spade = new Suit('spade', '♠');
-  public static readonly Heart = new Suit('heart', '♥');
-  public static readonly Diamond = new Suit('diamond', '♦');
-  public static readonly Club = new Suit('club', '♣');
+  public static readonly Spades = new Suit('spades', '♠');
+  public static readonly Hearts = new Suit('hearts', '♥');
+  public static readonly Diamonds = new Suit('diamonds', '♦');
+  public static readonly Clubs = new Suit('clubs', '♣');
 
   public static all(): Suit[] {
     return Object.values(Suit).filter((value) => value instanceof Suit);
@@ -22,4 +22,5 @@ export class Suit {
   private constructor(public readonly name: SuitName, public readonly unicodeSymbol: string) {}
 }
 
-export type SuitName = 'spade' | 'heart' | 'diamond' | 'club';
+export type SuitName = 'clubs' | 'diamonds' | 'hearts' | 'spades';
+export type SuitUnicodeSymbol = '♣' | '♦' | '♥' | '♠';
