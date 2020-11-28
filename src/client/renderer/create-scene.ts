@@ -6,6 +6,7 @@ export function createScene(tableModel: THREE.Object3D, grassTexture: THREE.Text
   createLights().forEach((light) => scene.add(light));
   scene.add(createTable(tableModel));
   scene.add(createGround(grassTexture));
+  return scene;
 }
 
 function createLights(): THREE.Light[] {

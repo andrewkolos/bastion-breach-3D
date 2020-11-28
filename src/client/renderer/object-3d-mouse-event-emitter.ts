@@ -2,9 +2,9 @@ import { InheritableEventEmitter } from '@akolos/event-emitter';
 import THREE from 'three';
 
 export interface Object3dMouseEventEmitterEvents<T extends THREE.Object3D> {
-  objectsEntered: (objects: T[]) => void;
-  objectsLeft: (objects: T[]) => void;
-  objectsClicked: (objects: T[]) => void;
+  objectsEntered: [objects: T[]];
+  objectsLeft: [objects: T[]];
+  objectsClicked: [objects: T[]];
 }
 
 export class Object3dMouseEventEmitter<T extends THREE.Object3D = THREE.Object3D>

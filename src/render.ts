@@ -4,9 +4,7 @@ import { Suit } from './card/suit';
 import { Rank } from './card/rank';
 import { Object3D } from 'three';
 import { Sound } from './sounds';
-import { TweenGroup } from './TweenGroup';
-import TWEEN, { Tween } from '@tweenjs/tween.js';
-import { Resources } from 'resources';
+import { Resources } from './client/resourcess';
 
 export class Stage {
   private camera!: THREE.PerspectiveCamera;

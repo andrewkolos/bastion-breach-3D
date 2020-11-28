@@ -1,14 +1,14 @@
-import { Card, CardAbbreviation } from '../../../card/card';
 import THREE, { Box3, Euler, Vector3 } from 'three';
 import { CardObject3d } from '../card-object3d/card-object3d';
-import TWEEN, { Easing, Tween } from '@tweenjs/tween.js';
 import { CARD_WIDTH } from '../card-object3d/card-object3d-factory';
 import { Animation } from './animation';
-import { CompositeAnimation } from './composite-animation';
-import { TweenJsAnimation } from './tween-animation';
+import { DeepPartial, Easings, Timeline, Tween } from '@akolos/ts-tween';
+import { EventEmitter } from '@akolos/event-emitter';
+import { AnimationEvents } from './animation-events';
 
 const CARD_DEALING_ANIMATION_DURATION = 1000;
 const CARD_FLIPPING_ANIMATION_DURATION = 200;
+const CARD_LIFT_ANIMATION_DURATION = 200;
 const CARD_FACEDOWN_ROTATION = new THREE.Euler(Math.PI / 2, 0, 0);
 
 export interface HandLayout {
@@ -17,18 +17,39 @@ export interface HandLayout {
   rotation: Euler;
 }
 
+function asAnimation(timeline: Timeline): Animation {
+  const ee = new EventEmitter<AnimationEvents>();
+
+  const animation: Animation = {
+    get on() { return on; },
+    get off() { return off; },
+    complete: () => timeline.complete(),
+    length: timeline.length,
+    get localTime() { return timeline.localTime },
+    stop: () => timeline.stop(),
+    chain(o: Animation) {
+      const seq = Tween.sequence()
+        .append(this._underylingTimeline)
+        .append(o._underylingTimeline)
+        .start();
+      if (this.localTime > 0) {
+        seq.seek(this.localTime);
+      }
+      return asAnimation(seq);
+    },
+    _underylingTimeline: timeline,
+  };
+
+  const on = ee.makeDelegate('on', animation);
+  const off = ee.makeDelegate('off', animation);
+
+  return animation;
+}
+
 export class CardAnimator {
-  private objectsByCardAbbreviation = new Map<CardAbbreviation, CardObject3d>();
-  private tweenGroup = new TWEEN.Group();
-  private animationByCard = new Map<CardObject3d, Tween<any>>();
+  private readonly inProgressAnimationsByCard = new Map<CardObject3d, Animation>();
 
-  public constructor(cardObjects: CardObject3d[]) {
-    cardObjects.forEach((co) => this.objectsByCardAbbreviation.set(new Card(co).toString(), co));
-  }
-
-  public animateIntoDeck(bottomCardPosition: THREE.Vector3): void {
-    const cards = Array.from(this.objectsByCardAbbreviation.values());
-
+  public animateIntoDeck(cards: CardObject3d[], bottomCardPosition: THREE.Vector3): void {
     cards.forEach((c, index) => this.animateCard(c, {
       position: bottomCardPosition.clone().setY(bottomCardPosition.y + (index * 0.01)),
       rotation: CARD_FACEDOWN_ROTATION,
@@ -36,7 +57,7 @@ export class CardAnimator {
   }
 
   public completeAllAnimations() {
-    this.tweenGroup.getAll().forEach((tween) => tween.end());
+    [...this.inProgressAnimationsByCard.values()].forEach(a => a.complete());
   }
 
   public animateHand(cards: CardObject3d[], to: HandLayout): Animation {
@@ -50,7 +71,7 @@ export class CardAnimator {
       (index) => firstCardLocX + (cardWidth + spaceBetweenCardCenters.x) * index,
     );
 
-    const cardAnimations = cards.map((card, index) => {
+    const cardTweens = cards.map((card, index) => {
       const target = {
         position: new Vector3(
           cardXPositions[index],
@@ -59,31 +80,34 @@ export class CardAnimator {
         ),
         rotation: rotation.clone(),
       };
-      return this.animateCard(card, target, CARD_DEALING_ANIMATION_DURATION);
+      return this._animate(card, target, CARD_DEALING_ANIMATION_DURATION);
     });
 
-    return new CompositeAnimation(cardAnimations);
+    return asAnimation(Tween.group(cardTweens));
   }
 
-  public flipCard(card: CardObject3d) {
+  public playCard(card: CardObject3d, position: THREE.Vector3): Animation {
     const startPos = card.position.clone();
-    const flipUp = new Tween(card, this.tweenGroup)
-      .to({
-        position: { y: startPos.y + CARD_WIDTH } // Not sufficient to avoid clipping with table if card is not flat.
-      })
-      .duration(CARD_FLIPPING_ANIMATION_DURATION / 2);
-    const layDown = new Tween(card, this.tweenGroup)
-      .to({
-        position: startPos
-      })
-      .duration(CARD_FLIPPING_ANIMATION_DURATION / 2);
 
-    flipUp.chain(layDown).start(); // Note: this does not create a new tween as of library version 18.
-    this.registerAnimation(card, flipUp);
-  }
+    const liftCard = this._animate(card, {
+      position: position.clone().add(new THREE.Vector3(0, 0.7, -1)),
+    }, CARD_LIFT_ANIMATION_DURATION)
 
-  public updateInProgressAnimations() {
-    this.tweenGroup.update();
+    const flipUp = this._animate(card, {
+      position: { y: startPos.y + CARD_WIDTH } // Not sufficient to avoid clipping with table if card is not flat.
+    }, CARD_FLIPPING_ANIMATION_DURATION / 2);
+
+    const layDown = this._animate(card, { position: startPos }, CARD_FLIPPING_ANIMATION_DURATION / 2);
+
+    const sequence = Tween.sequence()
+      .append(liftCard)
+      .append(flipUp)
+      .append(layDown)
+      .start();
+    const sequenceAsAnimation = asAnimation(sequence);
+
+    this.registerNewAnimation(card, sequenceAsAnimation);
+    return sequenceAsAnimation;
   }
 
   public animateCard(
@@ -91,30 +115,17 @@ export class CardAnimator {
     to: { position: THREE.Vector3; rotation: THREE.Euler },
     animationDuration: number,
   ): Animation {
-    const tween = new Tween(card, this.tweenGroup)
-      .to(to, animationDuration)
-      .easing(Easing.Quadratic.Out)
-      .onUpdate((value: { position: THREE.Vector3, rotation: THREE.Euler }) => {
-        card.position.copy(value.position);
-        card.rotation.copy(value.rotation);
-      })
-      .start();
-
-    this.registerAnimation(card, tween);
-    return new TweenJsAnimation(tween);
+    return asAnimation(this._animate(card, to, animationDuration));
   }
 
-  private registerAnimation(target: CardObject3d, tween: Tween<any>) {
-    stopCardsCurrentAnimation(this);
-    this.animationByCard.set(target, tween);
+  private _animate(card: CardObject3d, props: DeepPartial<CardObject3d>, durationMs: number): Tween<CardObject3d> {
+    return Tween.start(card, props, { easing: Easings.easeOutQuad, length: durationMs });
+  }
 
-    function stopCardsCurrentAnimation(self: CardAnimator) {
-      const currentTween = self.animationByCard.get(target);
-      if (currentTween != null) {
-        currentTween.stop();
-        currentTween.stopChainedTweens();
-      }
-    }
+  private registerNewAnimation(card: CardObject3d, animation: Animation) {
+    const currentAnim = this.inProgressAnimationsByCard.get(card);
+    currentAnim?.stop();
+    this.inProgressAnimationsByCard.set(card, animation);
   }
 }
 

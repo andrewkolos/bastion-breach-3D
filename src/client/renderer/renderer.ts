@@ -1,28 +1,32 @@
-import { InheritableEventEmitter } from '@akolos/event-emitter';
+import { Handler, InheritableEventEmitter } from '@akolos/event-emitter';
 import { Rank } from 'card';
-import { Card } from 'card/card';
+import { Card, CardAbbreviation } from 'card/card';
 import { Suit } from 'card/suit';
 import { CardAnimator } from 'client/renderer/animation/card-animator';
-import { Game, GameAdvancementOutcome, GameEvents } from 'game';
+import { Game, GameAdvancementOutcome, GameEvents, MatchupWinner } from 'game';
 import { Matchup } from 'game/matchup';
 import * as THREE from 'three';
 import { CardTextureResources, Resources } from '../resources';
-import { CardObject3d } from './card-object3d/card-object3d';
+import { CardObject3d, MatchupOutcomeMarker } from './card-object3d/card-object3d';
 import { createCardObject3dFactory } from './card-object3d/card-object3d-factory';
 import { createScene } from './create-scene';
 import { createThreeRenderer } from './create-three-renderer';
 import { Object3dMouseEventEmitter } from './object-3d-mouse-event-emitter';
 import { SuitAssignments } from './suit-assignments';
+import { Animation } from './animation/animation';
 
 export interface RendererEvents {
-  cardEnter: (card: Card) => void;
-  cardLeave: (card: Card) => void;
-  cardSelected: (card: Card) => void;
+  dealingCards: [];
+  cardsDelt: [];
+  cardEnter: [card: Card];
+  cardLeave: [card: Card];
+  cardClicked: [card: Card];
+  cardsHitTable: [];
 }
 
 interface GameAdvancement {
   readonly p1CardRank: Rank;
-  readonly p2CardRank: Rank; 
+  readonly p2CardRank: Rank;
   readonly outcome: GameAdvancementOutcome;
 }
 
@@ -32,24 +36,32 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
   private readonly camera: THREE.PerspectiveCamera;
   private readonly scene: THREE.Scene;
   private readonly webGlRenderer: THREE.WebGLRenderer;
-  private readonly cardMouseEventEmitter: Object3dMouseEventEmitter;
+  private readonly cardMouseEventEmitter: Object3dMouseEventEmitter<CardObject3d>;
 
-  private readonly gameStateRendered: Matchup[];
-  
-  private readonly cards: CardObject3d[];
-  private cardAnimator: CardAnimator;
+  private gameStateRendered: Matchup[] = [];
+
+  private readonly cards = new Map<CardAbbreviation, CardObject3d>();
+  private cardAnimator: CardAnimator = new CardAnimator();
 
   private unhandledGameAdvancements: GameAdvancement[] = [];
 
-  private _game?: Game;
-  private _gameAdvancedListener?: (...params: Parameters<GameEvents['advanced']>) => void;
+  private game: Game;
+  private _gameAdvancedListener!: Handler<GameEvents, 'advanced'>;
+  private suitAssignments: SuitAssignments;
 
-  public constructor(resources: Resources, private readonly suitAssignments: SuitAssignments) {
+  public constructor(resources: Resources, game: Game, suitAssignments: SuitAssignments) {
 
     super();
 
-    this.cards = createCardObjects(resources.cards, suitAssignments);
-    this.cardAnimator = new CardAnimator(this.cards);
+    this.game = game;
+    this.suitAssignments = suitAssignments;
+
+    this.scene = createScene(resources.table, resources.grassTexture);
+    const cards = createCardObjects(resources.cards, suitAssignments);
+    cards.forEach(c => {
+      this.cards.set(new Card(c.rank, c.suit).abbreviation, c);
+      this.scene.add(c);
+    });
 
     this.camera = new THREE.PerspectiveCamera(CAMERA_FOV, window.innerWidth / window.innerHeight, 0.1, 40);
     // TODO: Calculate a good position to place camera instead of using magic numbers.
@@ -58,8 +70,13 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
 
     this.webGlRenderer = createThreeRenderer(this.camera);
 
-    this.cardMouseEventEmitter = new Object3dMouseEventEmitter(this.camera, this.cards);
-    this.scene = createScene(resources.table, resources.grassTexture);
+    this.cardMouseEventEmitter = new Object3dMouseEventEmitter(this.camera, [...this.cards.values()]);
+    this.cardMouseEventEmitter.on('objectsClicked', objects => {
+      const cardClosestToCamera = objects[0];
+      this.emit('cardClicked', new Card(cardClosestToCamera));
+    });
+
+    this.setGameToRender(game);
   }
 
   public get domElement(): HTMLCanvasElement {
@@ -78,18 +95,17 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
   }
 
   public setGameToRender(game: Game) {
-    if (this._game) {
-      if (!this._gameAdvancedListener) {
-        throw Error('Game changed listener is missing.');
-      }
-      this._game.off('advanced', this._gameAdvancedListener);
+    if (this._gameAdvancedListener) {
+      this.game.off('advanced', this._gameAdvancedListener);
     }
 
     this._gameAdvancedListener = (p1CardRank, p2CardRank, outcome) =>
       this.unhandledGameAdvancements.push({ p1CardRank, p2CardRank, outcome });
+
     game.on('advanced', this._gameAdvancedListener);
-    
-    this._game = game;
+    this.game = game;
+
+    this.dealCards();
   }
 
   public stop() {
@@ -99,17 +115,11 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
   private update() {
     if (!this.running) return;
 
-    if (this._game == null) {
-      throw Error('Cannot render when no game has been given to render.');
+    if (!isCaughtUpWithGame(this, this.game)) {
+      this.catchUpWithGame();
+      this.gameStateRendered = this.game.matchups;
     }
 
-    if (!isCaughtUpWithGame(this, this._game)) {
-      // Animate player hands
-      // Animate played cards      
-    }
-    
-    this.cardAnimator.updateInProgressAnimations();
-    
     requestAnimationFrame(() => this.update());
 
     function isCaughtUpWithGame(self: Renderer, game: Game): boolean {
@@ -117,6 +127,72 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
     }
   }
 
+  private catchUpWithGame() {
+    let playCardAnimation: Animation | undefined = undefined;
+
+    for (let i = this.gameStateRendered.length; i < this.game.matchups.length; i++) {
+      const matchup = this.game.matchups[i];
+      const p1CardObj = this.getObjForCard(matchup.p1Card, this.suitAssignments.player1);
+      const p2CardObj = this.getObjForCard(matchup.p2Card, this.suitAssignments.player2);
+      const neutralCardObj = this.getObjForCard(matchup.neutralCard, this.suitAssignments.neutral);
+
+      playCardAnimation = this.cardAnimator.playCard(p1CardObj, neutralCardObj.position.clone().add(new THREE.Vector3(0, 0, 726 / 500 + 0.02)));
+      this.cardAnimator.playCard(p2CardObj, neutralCardObj.position.clone().sub(new THREE.Vector3(0, 0, 726 / 500 + 0.02)));
+
+      switch (matchup.winner) {
+        case MatchupWinner.P1:
+          neutralCardObj.setMatchupOutcomeMarker(MatchupOutcomeMarker.Win);
+          break;
+        case MatchupWinner.P2:
+          neutralCardObj.setMatchupOutcomeMarker(MatchupOutcomeMarker.Loss);
+          break;
+        case MatchupWinner.None:
+          neutralCardObj.setMatchupOutcomeMarker(MatchupOutcomeMarker.Stalemate);
+          break;
+      }
+    }
+
+    playCardAnimation?.on('complete', () => this.emit('cardsHitTable'));
+
+    this.animatePlayerHands();
+  }
+
+  private animatePlayerHands() {
+    const player1Hand = this.game.cards.inHand.p1
+      .map(rank => this.getObjForCard(rank, this.suitAssignments.player1));
+    const player2Hand = this.game.cards.inHand.p2
+      .map(rank => this.getObjForCard(rank, this.suitAssignments.player2));
+
+
+    this.cardAnimator.animateHand(player1Hand, {
+      centerAt: new THREE.Vector3(0, 0.4, 3),
+      spaceBetweenCardCenters: new THREE.Vector3(-0.2, 0.01, 0),
+      rotation: new THREE.Euler(-Math.PI / 2.8, 0, 0),
+    });
+    this.cardAnimator.animateHand(player2Hand, {
+      centerAt: new THREE.Vector3(0, 0.4, 3),
+      spaceBetweenCardCenters: new THREE.Vector3(0.1, 0, 0),
+      rotation: new THREE.Euler(Math.PI / 2, 0, 0),
+    });
+  }
+
+  private dealCards() {
+    this.animatePlayerHands();
+
+    const neutralCards = this.game.cards.onBoard.neutral
+      .map(r => this.getObjForCard(r, this.suitAssignments.neutral));
+    this.cardAnimator.animateHand(neutralCards, {
+      centerAt: new THREE.Vector3(0, 0, 0),
+      spaceBetweenCardCenters: new THREE.Vector3(0.1, 0, 0),
+      rotation: new THREE.Euler(-Math.PI / 2, 0, 0),
+    });
+  }
+
+  private getObjForCard(rank: Rank, suit: Suit): CardObject3d {
+    const cardObj = this.cards.get(new Card(rank, suit).abbreviation);
+    if (!cardObj) throw Error(`Card object is missing for ${new Card(rank, suit)}`);
+    return cardObj;
+  }
 }
 
 function createCardObjects(cardTextures: CardTextureResources, suits: SuitAssignments): CardObject3d[] {
