@@ -4,6 +4,7 @@ import noUiSlider from 'nouislider';
 
 interface UiEvents {
   playButtonClicked: [],
+  rulesButtonClicked: [],
   resetButtonClicked: [],
   volumeChanged: [value: number],
 }
@@ -26,6 +27,7 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
     this.resetButton.addEventListener('click', () => this.emit('resetButtonClicked'));
     this.showRulesButton.addEventListener('click', () => {
       show(this.rulesDialog);
+      this.emit('rulesButtonClicked');
     });
     this.playButton.addEventListener('click', () => {
       if (this.isPlayButtonActive) {
