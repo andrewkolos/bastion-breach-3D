@@ -11,17 +11,17 @@ import { CardObject3d, MatchupOutcomeMarker } from './card-object3d/card-object3
 import { createCardObject3dFactory } from './card-object3d/card-object3d-factory';
 import { createScene } from './create-scene';
 import { createThreeRenderer } from './create-three-renderer';
-import { Object3dMouseEventEmitter } from './object-3d-mouse-event-emitter';
+import { Object3dMouseProjector } from './object-ed-mouse-projector';
 import { SuitAssignments } from './suit-assignments';
 import { Animation } from './animation/animation';
 
 export interface RendererEvents {
   dealingCards: [];
   cardsDelt: [];
-  cardEnter: [card: Card];
-  cardLeave: [card: Card];
+  cardEntered: [card: Card];
+  cardLeft: [card: Card, otherCardsBeingHovered: boolean];
   cardClicked: [card: Card];
-  cardsHitTable: [];
+  cardHitTable: [];
 }
 
 interface GameAdvancement {
@@ -36,7 +36,7 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
   private readonly camera: THREE.PerspectiveCamera;
   private readonly scene: THREE.Scene;
   private readonly webGlRenderer: THREE.WebGLRenderer;
-  private readonly cardMouseEventEmitter: Object3dMouseEventEmitter<CardObject3d>;
+  private readonly cardMouseProjector: Object3dMouseProjector<CardObject3d>;
 
   private gameStateRendered: Matchup[] = [];
 
@@ -70,11 +70,19 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
 
     this.webGlRenderer = createThreeRenderer(this.camera);
 
-    this.cardMouseEventEmitter = new Object3dMouseEventEmitter(this.camera, [...this.cards.values()]);
-    this.cardMouseEventEmitter.on('objectsClicked', objects => {
+    const cardMouseProjector = new Object3dMouseProjector(this.camera, [...this.cards.values()]);
+    cardMouseProjector.on('objectsClicked', objects => {
       const cardClosestToCamera = objects[0];
       this.emit('cardClicked', new Card(cardClosestToCamera));
     });
+    cardMouseProjector.on('objectsEntered', objects => {
+      this.emit('cardEntered', new Card(objects[0]));
+    });
+    cardMouseProjector.off('objectsLeft', objects => {
+      cardMouseProjector
+      this.emit('cardLeft', new Card(objects[0]), cardMouseProjector.getHoveredObjects().length > 0);
+    });
+    this.cardMouseProjector = cardMouseProjector;
 
     this.setGameToRender(game);
   }

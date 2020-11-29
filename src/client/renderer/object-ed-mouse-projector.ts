@@ -1,14 +1,14 @@
 import { InheritableEventEmitter } from '@akolos/event-emitter';
 import THREE from 'three';
 
-export interface Object3dMouseEventEmitterEvents<T extends THREE.Object3D> {
+export interface Object3dMouseProjectorEvents<T extends THREE.Object3D> {
   objectsEntered: [objects: T[]];
   objectsLeft: [objects: T[]];
   objectsClicked: [objects: T[]];
 }
 
-export class Object3dMouseEventEmitter<T extends THREE.Object3D = THREE.Object3D>
-  extends InheritableEventEmitter<Object3dMouseEventEmitterEvents<T>> {
+export class Object3dMouseProjector<T extends THREE.Object3D = THREE.Object3D>
+  extends InheritableEventEmitter<Object3dMouseProjectorEvents<T>> {
 
   private mousePos?: THREE.Vector2;
   private mouseDownedObjects: T[] = [];
@@ -48,7 +48,7 @@ export class Object3dMouseEventEmitter<T extends THREE.Object3D = THREE.Object3D
     }
   }
 
-  private getHoveredObjects(): T[] {
+  public getHoveredObjects(): T[] {
     if (!this.mousePos) return [];
 
     const rayToHoveredObjects = new THREE.Vector3(this.mousePos.x, this.mousePos.y);
