@@ -56,6 +56,8 @@ export class Client {
     const game = new Game();
     const resources = await loadResources();
     const renderer = new Renderer(resources, game, suitAssignments);
+    document.body.appendChild(renderer.domElement);
+    renderer.start();
     return new Client(renderer, game, suitAssignments);
   }
 }

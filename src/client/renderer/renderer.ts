@@ -126,6 +126,8 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
       this.gameStateRendered = this.game.matchups;
     }
 
+    this.webGlRenderer.render(this.scene, this.camera);
+
     requestAnimationFrame(() => this.update());
 
     function isCaughtUpWithGame(self: Renderer, game: Game): boolean {

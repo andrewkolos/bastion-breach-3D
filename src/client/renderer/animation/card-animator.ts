@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { CardObject3d } from '../card-object3d/card-object3d';
 import { CARD_WIDTH } from '../card-object3d/card-object3d-factory';
 import { Animation } from './animation';
-import { DeepPartial, Easings, Timeline, Tween } from '@akolos/ts-tween';
+import { Easings, Timeline, Tween } from '@akolos/ts-tween';
 import { EventEmitter } from '@akolos/event-emitter';
 import { AnimationEvents } from './animation-events';
 
@@ -11,10 +11,26 @@ const CARD_FLIPPING_ANIMATION_DURATION = 200;
 const CARD_LIFT_ANIMATION_DURATION = 200;
 const CARD_FACEDOWN_ROTATION = new THREE.Euler(Math.PI / 2, 0, 0);
 
+interface Coordinate {
+  x?: number,
+  y?: number,
+  z?: number,
+}
+
+interface AnimatableCardProps {
+  position?: Coordinate;
+  rotation?: Coordinate;
+}
+
 export interface HandLayout {
   centerAt: THREE.Vector3;
   spaceBetweenCardCenters: THREE.Vector3;
   rotation: THREE.Euler;
+}
+
+function extractCoordinate(coordinate: Coordinate): Coordinate {
+  const { x, y, z } = coordinate;
+  return { x, y, z };
 }
 
 function asAnimation(timeline: Timeline): Animation {
@@ -118,8 +134,28 @@ export class CardAnimator {
     return asAnimation(this._animate(card, to, animationDuration));
   }
 
-  private _animate(card: CardObject3d, props: DeepPartial<CardObject3d>, durationMs: number): Tween<CardObject3d> {
-    return Tween.start(card, props, { easing: Easings.easeOutQuad, length: durationMs });
+  private _animate(card: CardObject3d, props: AnimatableCardProps, durationMs: number): Tween<AnimatableCardProps> {
+    return Tween.get({
+      position: extractCoordinate(card.position),
+      rotation: extractCoordinate(card.rotation),
+    })
+      .to({
+        position: props.position ? extractCoordinate(props.position) : undefined,
+        rotation: props.rotation ? extractCoordinate(props.rotation) : undefined,
+      })
+      .with({
+        easing: Easings.outQuad,
+        length: durationMs
+      })
+      .on('updated', ({ value }) => {
+        const { position, rotation } = value;
+        card.position.set(position.x ?? card.position.x,
+          position.y ?? card.position.y,
+          position.z ?? card.position.z);
+        card.rotation.set(rotation.x ?? card.rotation.x,
+          rotation.y ?? card.rotation.y,
+          rotation.z ?? card.rotation.z);
+      });
   }
 
   private registerNewAnimation(card: CardObject3d, animation: Animation) {

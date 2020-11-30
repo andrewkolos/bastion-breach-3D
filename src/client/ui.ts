@@ -19,7 +19,7 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
   private readonly volumeSlider = el('volumeSlider');
   private readonly volumeValueDisplay = el('volume');
 
-  private readonly tweenFactory = Tween.factory({ easing: Easings.easeOutCubic, length: 500 });
+  private isPlayButtonActive = false;
 
   private constructor() {
     super();
@@ -32,7 +32,7 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
     this.playButton.addEventListener('click', () => {
       if (this.isPlayButtonActive) {
         hide(this.rulesDialog);
-        this.playButton.addEventListener('click', () => this.emit('playButtonClicked'));
+        this.emit('playButtonClicked');
       }
     });
 
@@ -54,7 +54,6 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
       this.volumeValueDisplay.textContent = String(Math.round(values[0]));
     });
   }
-  private isPlayButtonActive = false;
 
   public static init(): Ui {
     return new Ui();
@@ -68,8 +67,7 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
   }
 
   public showRulesDialog() {
-    Tween.get(0).to(1).with({ easing: Easings.easeOutCubic, length: 500 })
-      .on('updated', ({ value }) => this.rulesDialog.style.opacity = String(value));
+    show(this.rulesDialog);
   };
 
   public showResultsToast(p1Score: number, cpuScore: number) {
@@ -78,7 +76,7 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
         'Draw.';
 
     this.resultsToast.textContent = `${winnerPart} ${p1Score} — ${cpuScore}`;
-    this.tweenFactory<number>(0, 0.9).on('updated', ({ value }) => this.resultsToast.style.opacity = String(value));
+    show(this.resultsToast, 0.9);
   }
 
   public updateScore(p1: number, p2: number) {
@@ -86,7 +84,7 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
   }
 
   public hideResultsToast() {
-    this.resultsToast.style.opacity = '0';
+    hide(this.resultsToast);
   }
   
   public isRulesDialogShowing() {
@@ -96,17 +94,22 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
 }
 
 function show(el: HTMLElement, opacity: number = 1.0) {
-  const current = parseFloat(el.style.opacity);
+  const current = getOpacity(el);
   tweenOpacity(el, current, opacity);
 }
 
 function hide(el: HTMLElement) {
-  const current = parseFloat(el.style.opacity);
+  const current = getOpacity(el);
   tweenOpacity(el, current, 0);
 } 
 
+function getOpacity(el: HTMLElement) {
+  const v = el.style.opacity;
+  return parseFloat(v) || 1.0;
+}
+
 function tweenOpacity(el: HTMLElement, from: number, to: number) {
-  Tween.get(from).to(to).with({ easing: Easings.easeOutQuad, length: 500 })
+  Tween.start(from, to, { easing: Easings.outQuad, length: 500})
     .on('updated', ({ value }) => el.style.opacity = String(value));
 }
 
