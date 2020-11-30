@@ -1,17 +1,17 @@
 import { Handler, InheritableEventEmitter } from '@akolos/event-emitter';
-import { Rank } from 'card';
-import { Card, CardAbbreviation } from 'card/card';
-import { Suit } from 'card/suit';
-import { CardAnimator } from 'client/renderer/animation/card-animator';
-import { Game, GameAdvancementOutcome, GameEvents, MatchupWinner } from 'game';
-import { Matchup } from 'game/matchup';
+import { Rank } from '../../card';
+import { Card, CardAbbreviation } from '../../card/card';
+import { Suit } from '../../card/suit';
+import { CardAnimator } from '../../client/renderer/animation/card-animator';
+import { Game, GameAdvancementOutcome, GameEvents, MatchupWinner } from '../../game';
+import { Matchup } from '../../game/matchup';
 import * as THREE from 'three';
 import { CardTextureResources, Resources } from '../resources';
 import { CardObject3d, MatchupOutcomeMarker } from './card-object3d/card-object3d';
 import { createCardObject3dFactory } from './card-object3d/card-object3d-factory';
 import { createScene } from './create-scene';
 import { createThreeRenderer } from './create-three-renderer';
-import { Object3dMouseProjector } from './object-ed-mouse-projector';
+import { Object3dMouseProjector } from './object-3d-mouse-projector';
 import { SuitAssignments } from './suit-assignments';
 import { Animation } from './animation/animation';
 
@@ -36,7 +36,6 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
   private readonly camera: THREE.PerspectiveCamera;
   private readonly scene: THREE.Scene;
   private readonly webGlRenderer: THREE.WebGLRenderer;
-  private readonly cardMouseProjector: Object3dMouseProjector<CardObject3d>;
 
   private gameStateRendered: Matchup[] = [];
 
@@ -82,7 +81,6 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
       cardMouseProjector
       this.emit('cardLeft', new Card(objects[0]), cardMouseProjector.getHoveredObjects().length > 0);
     });
-    this.cardMouseProjector = cardMouseProjector;
 
     this.setGameToRender(game);
   }
@@ -160,7 +158,7 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
       }
     }
 
-    playCardAnimation?.on('complete', () => this.emit('cardsHitTable'));
+    playCardAnimation?.on('complete', () => this.emit('cardHitTable'));
 
     this.animatePlayerHands();
   }

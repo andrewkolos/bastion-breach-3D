@@ -1,6 +1,6 @@
 import * as Three from 'three';
-import { CardTextureResources } from 'client/resources';
-import { Card, CardAbbreviation } from 'card/card';
+import { CardTextureResources } from '../../../client/resources';
+import { Card, CardAbbreviation } from '../../../card/card';
 import { CardObject3d } from './card-object3d';
 
 export const CARD_WIDTH = 500;

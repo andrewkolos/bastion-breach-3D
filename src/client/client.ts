@@ -1,5 +1,5 @@
-import { Game } from 'game';
-import { AudioService as Audio, AudioService } from './audio/audio-service';
+import { Game } from '../game';
+import { AudioService as Audio } from './audio/audio-service';
 import { SoundId } from './audio/sound-id';
 import { Renderer } from './renderer/renderer';
 import { SuitAssignments } from './renderer/suit-assignments';

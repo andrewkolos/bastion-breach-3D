@@ -7,8 +7,8 @@
     "test": "jest --verbose",
     "test:watch": "jest --watch",
     "test:debug": "node --inspect-brk=0.0.0.0 node_modules/jest/bin/jest.js --runInBand --config jest.config.js",
-    "dev": "webpack-dev-server --open",
-    "build": "webpack",
+    "dev": "webpack serve --open Chrome.exe",
+    "build": "parcel dist/index.html",
     "start": "http-server dist"
   },
   "author": "",
@@ -30,16 +30,15 @@
     "eslint-plugin-import": "^2.21.2",
     "http-server": "^0.12.3",
     "jest": "^26.6.3",
+    "parcel": "^1.12.4",
     "prettier": "^2.0.5",
+    "rollup": "^2.34.0",
     "style-loader": "^1.2.1",
     "ts-jest": "^26.4.4",
-    "ts-loader": "^7.0.5",
+    "ts-loader": "^8.0.11",
     "ts-nameof": "^5.0.0",
     "ts-node-register": "^1.0.0",
-    "typescript": "^4.1.2",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.11",
-    "webpack-dev-server": "^3.11.0"
+    "typescript": "^4.1.2"
   },
   "dependencies": {
     "@akolos/clone-dumb-object": "0.0.1",

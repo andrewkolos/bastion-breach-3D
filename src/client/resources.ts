@@ -1,8 +1,8 @@
 import { Object3D, Texture, ObjectLoader, TextureLoader, Mesh, MeshPhongMaterial } from 'three';
-import { Suit } from 'card/suit';
-import { objectPromiseAll } from 'util/object-promise-all';
-import { Rank } from 'card';
-import { Card, CardAbbreviation } from 'card/card';
+import { Suit } from '../card/suit';
+import { objectPromiseAll } from '../util/object-promise-all';
+import { Rank } from '../card';
+import { Card, CardAbbreviation } from '../card/card';
 
 const IMAGE_DIR_PATH = 'images/';
 const CARD_DIR_PATH = IMAGE_DIR_PATH + 'card/';

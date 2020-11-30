@@ -1,6 +1,6 @@
-import { Suit } from 'card/suit';
-import { Client } from 'client/client';
-import { SuitAssignments } from 'client/renderer/suit-assignments';
+import { Suit } from './card/suit';
+import { Client } from './client/client';
+import { SuitAssignments } from './client/renderer/suit-assignments';
 
 const suitAssignments: SuitAssignments = {
   neutral: Suit.Spades,

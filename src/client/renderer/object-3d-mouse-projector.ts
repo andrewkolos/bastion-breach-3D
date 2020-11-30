@@ -1,5 +1,5 @@
 import { InheritableEventEmitter } from '@akolos/event-emitter';
-import THREE from 'three';
+import * as THREE from 'three';
 
 export interface Object3dMouseProjectorEvents<T extends THREE.Object3D> {
   objectsEntered: [objects: T[]];

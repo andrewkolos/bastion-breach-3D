@@ -1,4 +1,4 @@
-import THREE from 'three';
+import * as THREE from 'three';
 
 export function createThreeRenderer(camera: THREE.PerspectiveCamera): THREE.WebGLRenderer {
   const renderer = new THREE.WebGLRenderer({ antialias: true });

@@ -1,7 +1,7 @@
 import { Object3D } from 'three';
 import { Rank } from 'card';
 import { Suit } from 'card/suit';
-import THREE from 'three';
+import * as THREE from 'three';
 import { Card } from 'card/card';
 
 const MARKER_OPACITY = 0.5;

@@ -1,4 +1,4 @@
-import THREE, { Box3, Euler, Vector3 } from 'three';
+import * as THREE from 'three';
 import { CardObject3d } from '../card-object3d/card-object3d';
 import { CARD_WIDTH } from '../card-object3d/card-object3d-factory';
 import { Animation } from './animation';
@@ -12,9 +12,9 @@ const CARD_LIFT_ANIMATION_DURATION = 200;
 const CARD_FACEDOWN_ROTATION = new THREE.Euler(Math.PI / 2, 0, 0);
 
 export interface HandLayout {
-  centerAt: Vector3;
-  spaceBetweenCardCenters: Vector3;
-  rotation: Euler;
+  centerAt: THREE.Vector3;
+  spaceBetweenCardCenters: THREE.Vector3;
+  rotation: THREE.Euler;
 }
 
 function asAnimation(timeline: Timeline): Animation {
@@ -64,7 +64,7 @@ export class CardAnimator {
     const { centerAt, spaceBetweenCardCenters, rotation } = to;
     if (cards.length === 0) throw Error("No cards were given to animate.");
 
-    const cardWidth = new Box3().setFromObject(cards[0]).getSize(new Vector3()).x;
+    const cardWidth = new THREE.Box3().setFromObject(cards[0]).getSize(new THREE.Vector3()).x;
     const firstCardLocX = centerAt.x - ((cardWidth + spaceBetweenCardCenters.x) / 2) * (cards.length - 1);
 
     const cardXPositions = range(cards.length).map(
@@ -73,7 +73,7 @@ export class CardAnimator {
 
     const cardTweens = cards.map((card, index) => {
       const target = {
-        position: new Vector3(
+        position: new THREE.Vector3(
           cardXPositions[index],
           centerAt.y + spaceBetweenCardCenters.y,
           centerAt.z + spaceBetweenCardCenters.z,
