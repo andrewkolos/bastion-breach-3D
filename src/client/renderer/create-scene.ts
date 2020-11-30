@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 export function createScene(tableModel: THREE.Object3D, grassTexture: THREE.Texture): THREE.Scene {
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0xffffff, 0.1, 50);
+  scene.fog = new THREE.Fog(0xdddddd, 0.1, 50);
   createLights().forEach((light) => scene.add(light));
   scene.add(createTable(tableModel));
   scene.add(createGround(grassTexture));

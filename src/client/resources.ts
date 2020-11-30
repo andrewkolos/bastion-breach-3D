@@ -1,8 +1,9 @@
-import { Object3D, Texture, ObjectLoader, TextureLoader, Mesh, MeshPhongMaterial } from 'three';
+import { Object3D, Texture, TextureLoader, Mesh, MeshPhongMaterial } from 'three';
 import { Suit } from '../card/suit';
 import { objectPromiseAll } from '../util/object-promise-all';
 import { Rank } from '../card';
 import { Card, CardAbbreviation } from '../card/card';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
 
 const IMAGE_DIR_PATH = 'images/';
 const CARD_DIR_PATH = IMAGE_DIR_PATH + 'card/';
@@ -51,7 +52,7 @@ export async function loadResources(): Promise<Resources> {
 
 function loadTable(): Promise<Object3D> {
   const loadModel: Promise<Object3D> = new Promise((resolve) => {
-    new ObjectLoader().load('models/lowtable.json', (obj) => {
+    new OBJLoader().load('models/lowtable.obj', (obj) => {
       resolve(obj);
     });
   });

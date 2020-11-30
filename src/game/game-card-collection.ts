@@ -1,4 +1,4 @@
-import { Card } from 'card/card';
+import { Card } from '../card/card';
 
 export interface GameCardCollection<T = Card> {
   onBoard: {

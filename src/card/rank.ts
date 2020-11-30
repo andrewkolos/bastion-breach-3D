@@ -24,7 +24,8 @@ export class Rank {
   }
 
   public static isRank(value: any): value is Rank {
-    return Rank.all().some((rank) => rank === value);
+    const asRank = value as Rank;
+    return (asRank.abbreviation && asRank.name && asRank.beats) != null;
   }
 
   public static arrayFromCards(cards: CardLike[]): Rank[] {

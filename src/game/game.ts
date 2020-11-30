@@ -13,6 +13,10 @@ interface Score {
   p2: number;
 }
 
+type DeepReadonly<T> = T extends Function ? T :
+  T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]> } :
+  T;
+
 export interface GameConfig {
   neutralBoard?: Rank[];
 }
@@ -31,8 +35,8 @@ export class Game extends InheritableEventEmitter<GameEvents> {
     return cloneDumbObject(this._score);
   }
 
-  public get cards(): GameCardCollection<Rank> {
-    return cloneDumbObject(this._cards);
+  public get cards(): DeepReadonly<GameCardCollection<Rank>> {
+    return this._cards;
   }
 
   public get matchups(): Array<Readonly<Matchup>> {

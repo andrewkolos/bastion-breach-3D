@@ -1,5 +1,5 @@
 /.idea
 /node_modules
-/dist/bundle*
+/dist
 .cache
 todo.txt

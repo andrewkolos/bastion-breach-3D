@@ -1,19 +1,19 @@
 import { Handler, InheritableEventEmitter } from '@akolos/event-emitter';
+import * as THREE from 'three';
 import { Rank } from '../../card';
 import { Card, CardAbbreviation } from '../../card/card';
 import { Suit } from '../../card/suit';
 import { CardAnimator } from '../../client/renderer/animation/card-animator';
 import { Game, GameAdvancementOutcome, GameEvents, MatchupWinner } from '../../game';
 import { Matchup } from '../../game/matchup';
-import * as THREE from 'three';
 import { CardTextureResources, Resources } from '../resources';
+import { Animation } from './animation/animation';
 import { CardObject3d, MatchupOutcomeMarker } from './card-object3d/card-object3d';
 import { createCardObject3dFactory } from './card-object3d/card-object3d-factory';
 import { createScene } from './create-scene';
 import { createThreeRenderer } from './create-three-renderer';
 import { Object3dMouseProjector } from './object-3d-mouse-projector';
 import { SuitAssignments } from './suit-assignments';
-import { Animation } from './animation/animation';
 
 export interface RendererEvents {
   dealingCards: [];
@@ -69,7 +69,7 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
 
     this.webGlRenderer = createThreeRenderer(this.camera);
 
-    const cardMouseProjector = new Object3dMouseProjector(this.camera, [...this.cards.values()]);
+    const cardMouseProjector = new Object3dMouseProjector(this.camera, Array.from(this.cards.values()));
     cardMouseProjector.on('objectsClicked', objects => {
       const cardClosestToCamera = objects[0];
       this.emit('cardClicked', new Card(cardClosestToCamera));
@@ -77,7 +77,7 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
     cardMouseProjector.on('objectsEntered', objects => {
       this.emit('cardEntered', new Card(objects[0]));
     });
-    cardMouseProjector.off('objectsLeft', objects => {
+    cardMouseProjector.on('objectsLeft', objects => {
       cardMouseProjector
       this.emit('cardLeft', new Card(objects[0]), cardMouseProjector.getHoveredObjects().length > 0);
     });
