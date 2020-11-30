@@ -95,22 +95,27 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
 
 function show(el: HTMLElement, opacity: number = 1.0) {
   const current = getOpacity(el);
+  el.style.display = '';
   tweenOpacity(el, current, opacity);
 }
 
 function hide(el: HTMLElement) {
   const current = getOpacity(el);
-  tweenOpacity(el, current, 0);
+  tweenOpacity(el, current, 0).on('completed', () => el.style.display = 'none');
+
 } 
 
 function getOpacity(el: HTMLElement) {
   const v = el.style.opacity;
-  return parseFloat(v) || 1.0;
+  return v === '' ? 1.0 : parseFloat(v);
 }
 
 function tweenOpacity(el: HTMLElement, from: number, to: number) {
-  Tween.start(from, to, { easing: Easings.outQuad, length: 500})
-    .on('updated', ({ value }) => el.style.opacity = String(value));
+  return Tween.start(from, to, { easing: Easings.outQuad, length: 500})
+    .on('updated', ({ value }, source) => {
+      el.style.opacity = String(value);
+      console.log(source);
+    });
 }
 
 function el(id: string): HTMLElement | never {

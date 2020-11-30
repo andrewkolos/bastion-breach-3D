@@ -1,4 +1,4 @@
-import * as Three from 'three';
+import * as THREE from 'three';
 import { CardTextureResources } from '../../../client/resources';
 import { Card, CardAbbreviation } from '../../../card/card';
 import { CardObject3d } from './card-object3d';
@@ -9,16 +9,20 @@ export const CARD_HEIGHT = 726;
 export type CardObject3dFactory = (card: Card) => CardObject3d;
 
 export function createCardObject3dFactory(cardTextures: CardTextureResources): CardObject3dFactory {
-  const frontTextureMap = new Map<CardAbbreviation, Three.Texture>();
-  Card.makeDeckOf().map(c => ({
-    card: c,
-    texture: cardTextures.getFront(c),
-  })).forEach(({card, texture}) => {
+  const frontTextureMap = new Map<CardAbbreviation, THREE.Texture>();
+  Card.makeDeckOf().map(c => {
+    const texture = cardTextures.getFront(c);
+    texture.minFilter = texture.magFilter = THREE.LinearFilter;
+    return {
+      card: c,
+      texture: cardTextures.getFront(c),
+    }
+  }).forEach(({ card, texture }) => {
     frontTextureMap.set(card.abbreviation, texture);
   });
 
   return (card: Card) => {
-    const result = new Three.Object3D();
+    const result = new THREE.Object3D();
     result.add(createCardFront(card));
     result.add(createCardBack());
     result.castShadow = true;
@@ -28,15 +32,15 @@ export function createCardObject3dFactory(cardTextures: CardTextureResources): C
     return new CardObject3d(result, card);
   };
 
-  function createCardFront(card: Card): Three.Mesh {
+  function createCardFront(card: Card): THREE.Mesh {
     const geometry = createCardGeometry();
-    const material = new Three.MeshPhongMaterial({
+    const material = new THREE.MeshPhongMaterial({
       alphaMap: cardTextures.frontSideAlpha,
       alphaTest: 0.9,
       map: getFrontTexture(card),
-      side: Three.FrontSide,
+      side: THREE.FrontSide,
     });
-    const frontMesh = new Three.Mesh(geometry, material);
+    const frontMesh = new THREE.Mesh(geometry, material);
     frontMesh.castShadow = true;
     return frontMesh;
 
@@ -49,23 +53,23 @@ export function createCardObject3dFactory(cardTextures: CardTextureResources): C
     }
   }
 
-  function createCardBack(): Three.Mesh {
+  function createCardBack(): THREE.Mesh {
     const geometry = createCardGeometry();
-    const material = new Three.MeshPhongMaterial({
+    const material = new THREE.MeshPhongMaterial({
       alphaMap: cardTextures.backSideAlpha,
       alphaTest: 0.5,
       map: cardTextures.backSide,
-      side: Three.BackSide,
+      side: THREE.BackSide,
     });
 
-    const mesh = new Three.Mesh(geometry, material);
+    const mesh = new THREE.Mesh(geometry, material);
     mesh.castShadow = true;
 
     return mesh;
   }
 
-  function createCardGeometry(): Three.PlaneGeometry {
+  function createCardGeometry(): THREE.PlaneGeometry {
     // TODO: see if image dimensions can be extracted from Texture
-    return new Three.PlaneGeometry(1, CARD_HEIGHT / CARD_WIDTH);
+    return new THREE.PlaneGeometry(1, CARD_HEIGHT / CARD_WIDTH);
   }
 }

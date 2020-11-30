@@ -1,4 +1,4 @@
-import { Object3D, Texture, TextureLoader, Mesh, MeshPhongMaterial } from 'three';
+import { Object3D, Texture, TextureLoader, Mesh, MeshPhongMaterial, RepeatWrapping } from 'three';
 import { Suit } from '../card/suit';
 import { objectPromiseAll } from '../util/object-promise-all';
 import { Rank } from '../card';
@@ -38,13 +38,12 @@ export async function loadResources(): Promise<Resources> {
   const resourcesPromiseObj = {
     table: loadTable(),
     grassTexture: loadTexture(IMAGE_DIR_PATH + 'grass.png'),
-      
-      cards: {
-        backSideAlpha: loadTexture(CARD_DIR_PATH + 'backside_alpha.png'),
-        backSide: loadTexture(CARD_DIR_PATH + 'backside.png'),
-        frontSideAlpha: loadTexture(CARD_DIR_PATH + 'frontside_alpha.png'),
-        getFront: loadCardFrontTextures(),
-      },
+    cards: {
+      backSideAlpha: loadTexture(CARD_DIR_PATH + 'backside_alpha.png'),
+      backSide: loadTexture(CARD_DIR_PATH + 'backside.png'),
+      frontSideAlpha: loadTexture(CARD_DIR_PATH + 'frontside_alpha.png'),
+      getFront: loadCardFrontTextures(),
+    },
   };
 
   return objectPromiseAll(resourcesPromiseObj);
@@ -61,6 +60,9 @@ function loadTable(): Promise<Object3D> {
     Promise.all([loadModel, loadTexture(IMAGE_DIR_PATH + 'wood.png')]).then((value) => {
       const object = value[0];
       const texture = value[1];
+      texture.offset.set(0, 0);
+      texture.repeat.set(24, 24);
+      texture.wrapS = texture.wrapT = RepeatWrapping;
       applyTexture(object.children[0], texture);
       resolve(object);
     });
