@@ -53,7 +53,10 @@ export class Card implements CardLike {
     const ranks = Rank.all();
     const suits = Suit.all();
 
-    return ranks.map((r, i) => new Card(r, suits[i]));
+    return ranks.reduce((merged: Card[], r) => {
+      suits.forEach(s => merged.push(new Card(r, s)));
+      return merged;
+    }, [])
   }
 
   public static allRanksOfSuit(suit: Suit): Card[] {

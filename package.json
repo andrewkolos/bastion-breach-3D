@@ -8,7 +8,7 @@
     "test:watch": "jest --watch",
     "test:debug": "node --inspect-brk=0.0.0.0 node_modules/jest/bin/jest.js --runInBand --config jest.config.js",
     "dev": "webpack serve --open Chrome.exe",
-    "build": "parcel dist/index.html",
+    "build": "parcel src/index.html",
     "start": "http-server dist"
   },
   "author": "",
@@ -20,7 +20,6 @@
     "@types/jqueryui": "^1.12.13",
     "@types/nouislider": "^9.0.7",
     "@types/physijs": "0.0.30",
-    "@types/three": "^0.103.2",
     "@types/ts-nameof": "^4.2.1",
     "@typescript-eslint/eslint-plugin": "^3.3.0",
     "@typescript-eslint/parser": "^3.3.0",
@@ -49,9 +48,14 @@
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.4",
     "nouislider": "^14.6.2",
-    "three": "^0.117.1",
+    "parcel-plugin-asset-copier": "^1.1.0",
+    "three": "^0.123.0",
     "three-obj-loader": "^1.1.3",
     "three-orbit-controls": "^82.1.0",
     "three-orbitcontrols-ts": "^0.1.2"
-  }
+  },
+  "assetsPath": "src/assets",
+  "browserslist": [
+    "since 2017-06"
+  ]
 }

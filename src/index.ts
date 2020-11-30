@@ -1,6 +1,7 @@
 import { Suit } from './card/suit';
 import { Client } from './client/client';
 import { SuitAssignments } from './client/renderer/suit-assignments';
+import 'regenerator-runtime/runtime';
 
 const suitAssignments: SuitAssignments = {
   neutral: Suit.Spades,
