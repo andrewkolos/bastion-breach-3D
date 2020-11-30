@@ -48,6 +48,10 @@ function createTable(tableModel: THREE.Object3D) {
 }
 
 function createGround(grassTexture: THREE.Texture) {
+  grassTexture.offset.set(0, 0);
+  grassTexture.repeat.set(24, 24);
+  grassTexture.wrapS = grassTexture.wrapT = THREE.RepeatWrapping;
+
   const geometry = new THREE.PlaneGeometry(70, 70);
   const material = new THREE.MeshPhongMaterial({ map: grassTexture });
   const mesh = new THREE.Mesh(geometry, material);
