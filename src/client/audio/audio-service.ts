@@ -1,8 +1,7 @@
 import { SoundId } from './sound-id';
 
 const SOUND_DIR_PATH = 'sound/';
-const MUSIC_PATH = SOUND_DIR_PATH + 'quadproquo.mp3';
-const INIT_MUSIC_VOLUME = 0.3;
+const INIT_MUSIC_VOLUME = 1.0;
 const INIT_SOUND_VOLUME = 1.0;
 
 interface SoundData {
@@ -31,7 +30,7 @@ const sounds: SoundData[] = [
 
 const musicData = {
   path: SOUND_DIR_PATH + 'quadproquo.mp3',
-  volumeNormalization: 0.2,
+  volumeNormalization: 0.15,
 }
 
 const soundsByIdEntries: [SoundId, SoundData][] = sounds.map(s => [s.id, s]);
@@ -83,9 +82,9 @@ export class AudioService {
   }
 
   public static playMusic() {
-    AudioService.musicAudio = new Audio(MUSIC_PATH);
+    AudioService.musicAudio = new Audio(musicData.path);
     AudioService.musicAudio.loop = true;
-    AudioService.musicAudio.volume = AudioService._musicVolume;
+    AudioService.musicAudio.volume = AudioService._musicVolume * musicData.volumeNormalization;
     AudioService._isMusicPlaying = true;
     AudioService.musicAudio.play();
   }

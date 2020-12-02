@@ -1,4 +1,4 @@
-export const enum SoundId {
+export enum SoundId {
   CardPlay = 'cardplay',
   CardFlip = 'cardflip',
   CardHitTable = 'cardhittable',

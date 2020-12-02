@@ -1,5 +1,4 @@
 import { Game } from '../game';
-import { AudioService as Audio } from './audio/audio-service';
 import { SoundId } from './audio/sound-id';
 import { Renderer } from './renderer/renderer';
 import { SuitAssignments } from './renderer/suit-assignments';
@@ -11,6 +10,7 @@ import { CardLike } from 'card/card-like';
 export class Client {
   private acceptGameInputs = false;
   private readonly ui = Ui.init();
+  private lastCardSoundTime = new Date().getTime();
 
   private constructor(private readonly renderer: Renderer, private game: Game, private readonly suitAssignments: SuitAssignments) {
     this.init();
@@ -19,7 +19,7 @@ export class Client {
   private init() {
     const suitAssignments = this.suitAssignments;
 
-    this.renderer.on('cardFlipping', () => Audio.playSound(SoundId.CardFlip))
+    this.renderer
       .on('dealingCards', () => this.acceptGameInputs = false)
       .on('cardsDelt', () => this.acceptGameInputs = true)
       .on('cardEntered', card => {
@@ -43,11 +43,11 @@ export class Client {
           audio.playSound(SoundId.CardPlay);
         }
       })
-      .on('cardFlipping', () => audio.playSound(SoundId.CardFlip))
+      .on('cardFlipping', () => this.playCardSound(SoundId.CardFlip))
       .on('cardHitTable', () => {
-        const {game} = this;
+        const { game } = this;
 
-        audio.playSound(SoundId.CardHitTable);
+        this.playCardSound(SoundId.CardHitTable);
 
         this.ui.updateScore(game.score.p1, game.score.p2);
         if (game.isComplete()) {
@@ -76,6 +76,16 @@ export class Client {
     function isCardInP1Hand(card: CardLike, game: Game) {
       return card.suit === suitAssignments.player1 && game.cards.inHand.p1.includes(card.rank);
     }
+  }
+
+  private playCardSound(soundId: SoundId.CardFlip | SoundId.CardHitTable) {
+    const now = new Date().getTime();
+
+    if (now - this.lastCardSoundTime < 10) {
+      audio.playSound(soundId);
+    }
+
+    this.lastCardSoundTime = now;
   }
 
   public static async start(suitAssignments: SuitAssignments): Promise<Client> {

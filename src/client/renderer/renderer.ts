@@ -75,6 +75,10 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
     });
     this.cardMouseProjector = cardMouseProjector;
 
+    this.cardAnimator
+      .on('cardFlippedUp', () => this.emit('cardFlipping'))
+      .on('cardHitTable', () => this.emit('cardHitTable'));
+
     this.setGameToRender(game);
 
   }
@@ -133,7 +137,6 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
       this.cardAnimator.playCard(p1CardObj, neutralCardObj.position.clone().add(new THREE.Vector3(0, 0, 726 / 500 + 0.02)));
       this.cardAnimator.playCard(p2CardObj, neutralCardObj.position.clone().sub(new THREE.Vector3(0, 0, 726 / 500 + 0.02)))
         .on('completed', () => {
-          this.emit('cardHitTable');
           switch (matchup.winner) {
             case MatchupWinner.P1:
               neutralCardObj.setMatchupOutcomeMarker(MatchupOutcomeMarker.Win);
@@ -158,7 +161,6 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
     const player2Hand = this.game.cards.inHand.p2
       .map(rank => this.getObjForCard(rank, this.suitAssignments.player2));
 
-    console.log(player1Hand);
     this.cardAnimator.animateHand(player1Hand, {
       centerAt: new THREE.Vector3(0, 0.4, 3),
       spaceBetweenCardCenters: new THREE.Vector3(-0.2, 0.01, 0),

@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import { CardObject3d } from '../card-object3d/card-object3d';
 import { Animation } from './animation';
-import { Easings, Timeline, Tween } from '@akolos/ts-tween';
+import { DeepPartial, Easings, Timeline, Tween } from '@akolos/ts-tween';
 import { EventEmitter, InheritableEventEmitter } from '@akolos/event-emitter';
 import { AnimationEvents } from './animation-events';
 
 const CARD_DEALING_ANIMATION_DURATION = 500;
 const CARD_SETTING_ANIMATION_DURATION = 300;
-const CARD_FLIPPING_ANIMATION_DURATION = 100 * 10;
+const CARD_FLIPPING_ANIMATION_DURATION = 200;
 const CARD_LIFT_ANIMATION_DURATION = 200;
 const CARD_FACEDOWN_ROTATION = new THREE.Euler(Math.PI / 2, 0, 0);
 
@@ -126,7 +126,7 @@ export class CardAnimator extends InheritableEventEmitter<CardAnimatorEvents> {
   public playCard(card: CardObject3d, position: THREE.Vector3): Animation {
 
     const liftCard = this._animate(card, {
-      position: card.position.add(new THREE.Vector3(0, 0.7, -1)).clone(),
+      position: {y: card.position.y + 0.7, z: card.position.z - 1},
     }, CARD_LIFT_ANIMATION_DURATION);
 
     const setCard = this._animate(card, {
@@ -141,18 +141,18 @@ export class CardAnimator extends InheritableEventEmitter<CardAnimatorEvents> {
       rotation: {
         x: - Math.PI / 2
       }
-    }, CARD_FLIPPING_ANIMATION_DURATION / 2);
+    }, CARD_FLIPPING_ANIMATION_DURATION);
     flipUp.on('started', () => {
       this.emit('cardFlippedUp');
     });
 
-    const layDown = this._animate(card, { position }, CARD_FLIPPING_ANIMATION_DURATION / 2);
+    const layDown = this._animate(card, { position }, CARD_FLIPPING_ANIMATION_DURATION);
     layDown.on('completed', () => this.emit('cardHitTable'));
 
     const sequence = Tween.sequence()
       .append(liftCard)
       .append(setCard)
-      .append(flipUp)
+      .append(flipUp, 100)
       .append(layDown)
       .start();
     const sequenceAsAnimation = asAnimation(sequence);
@@ -161,14 +161,7 @@ export class CardAnimator extends InheritableEventEmitter<CardAnimatorEvents> {
     return sequenceAsAnimation;
   }
 
-  public animateCard(
-    card: CardObject3d,
-    to: { position: THREE.Vector3; rotation: THREE.Euler },
-    animationDuration: number,
-  ): Animation {
-    return asAnimation(this._animate(card, to, animationDuration));
-  }
-
+ 
   private _animate(card: CardObject3d, props: AnimatableCardProps, durationMs: number): Tween<AnimatableCardProps> {
 
     const to: AnimatableCardProps = {} as any;
@@ -176,19 +169,10 @@ export class CardAnimator extends InheritableEventEmitter<CardAnimatorEvents> {
     if (props.rotation) to.rotation = extractCoordinate(props.rotation);
 
     return Tween.get(card)
-      .to(to as any)
+      .to(to as DeepPartial<CardObject3d>)
       .with({
         easing: Easings.outQuad,
         length: durationMs,
-      })
-      .on('updated', ({ value }) => {
-        const { position, rotation } = value;
-        card.position.set(position.x ?? card.position.x,
-          position.y ?? card.position.y,
-          position.z ?? card.position.z);
-        card.rotation.set(rotation.x ?? card.rotation.x,
-          rotation.y ?? card.rotation.y,
-          rotation.z ?? card.rotation.z);
       });
   }
 
