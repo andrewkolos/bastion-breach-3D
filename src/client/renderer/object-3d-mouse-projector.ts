@@ -60,7 +60,7 @@ export class Object3dMouseProjector<T extends THREE.Object3D = THREE.Object3D>
 
     raycaster.setFromCamera(normalized, this.camera);
 
-    const intersections = raycaster.intersectObjects(this.objects as T[], true);
+    const intersections = raycaster.intersectObjects(this.objects as T[], true).reverse();
     return intersections.map(i => {
       const obj = i.object;
       if (this.objects.includes(obj as T)) return obj as unknown as  T;

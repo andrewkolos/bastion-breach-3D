@@ -33,7 +33,7 @@ export class Client {
         }
       })
       .on('cardClicked', clickedCard => {
-        if (isCardInP1Hand(clickedCard, this.game)) {
+        if (!this.ui.isRulesDialogShowing() && isCardInP1Hand(clickedCard, this.game)) {
           const p2CardsInHand = this.game.cards.inHand.p2;
           const randomP2Card = p2CardsInHand[Math.floor(Math.random() * p2CardsInHand.length)];
           this.game.advance({

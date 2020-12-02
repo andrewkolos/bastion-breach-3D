@@ -70,6 +70,11 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
     show(this.rulesDialog);
   };
 
+  public isRulesDialogShowing(): boolean {
+    const opacity = this.rulesDialog.style.opacity;
+    return opacity === '' || parseFloat(opacity) > 0;
+  }
+
   public showResultsToast(p1Score: number, cpuScore: number) {
     const winnerPart = p1Score > cpuScore ? 'You win!' :
       cpuScore > p1Score ? 'Computer wins.' :
@@ -87,9 +92,6 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
     hide(this.resultsToast);
   }
   
-  public isRulesDialogShowing() {
-    return parseFloat(this.rulesDialog.style.opacity) > 0;
-  }
 }
 
 function show(el: HTMLElement, opacity: number = 1.0) {
