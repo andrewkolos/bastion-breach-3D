@@ -1,6 +1,7 @@
 import { InheritableEventEmitter } from '@akolos/event-emitter';
 import * as THREE from 'three';
 
+const raycaster = new THREE.Raycaster();
 export interface Object3dMouseProjectorEvents<T extends THREE.Object3D> {
   objectsEntered: [objects: T[]];
   objectsLeft: [objects: T[]];
@@ -46,15 +47,29 @@ export class Object3dMouseProjector<T extends THREE.Object3D = THREE.Object3D>
       this.emit('objectsClicked', this.clickedObjects);
       this.clickedObjects = [];
     }
+    this.currentlyHoveredObjects = nextHoveredObjects;
   }
 
   public getHoveredObjects(): T[] {
-    if (!this.mousePos) return [];
+    if (!this.mousePos) return [];  
+    
+    const normalized = new THREE.Vector2(
+      (this.mousePos.x / window.innerWidth) * 2 - 1,
+      -(this.mousePos.y / window.innerHeight) * 2 + 1,
+    );
 
-    const rayToHoveredObjects = new THREE.Vector3(this.mousePos.x, this.mousePos.y);
-    rayToHoveredObjects.unproject(this.camera);
+    raycaster.setFromCamera(normalized, this.camera);
 
-    const intersections = new THREE.Raycaster().intersectObjects(this.objects as T[]);
-    return intersections.map(i => i.object as T);
+    const intersections = raycaster.intersectObjects(this.objects as T[], true);
+    return intersections.map(i => {
+      const obj = i.object;
+      if (this.objects.includes(obj as T)) return obj as unknown as  T;
+      let parent = obj.parent;
+      while (parent != null) {
+        if (this.objects.includes(parent as T)) return obj.parent as unknown as T;
+        parent = parent.parent;
+      }
+      throw Error();
+    });
   }
 }

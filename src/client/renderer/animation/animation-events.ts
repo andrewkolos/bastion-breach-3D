@@ -1,5 +1,5 @@
 export interface AnimationEvents {
-  update: [];
-  complete: [];
+  updated: [];
+  completed: [];
   stopped: [];
 }

@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import { CardObject3d } from '../card-object3d/card-object3d';
-import { CARD_WIDTH } from '../card-object3d/card-object3d-factory';
 import { Animation } from './animation';
 import { Easings, Timeline, Tween } from '@akolos/ts-tween';
-import { EventEmitter } from '@akolos/event-emitter';
+import { EventEmitter, InheritableEventEmitter } from '@akolos/event-emitter';
 import { AnimationEvents } from './animation-events';
 
-const CARD_DEALING_ANIMATION_DURATION = 1000;
-const CARD_FLIPPING_ANIMATION_DURATION = 200;
+const CARD_DEALING_ANIMATION_DURATION = 500;
+const CARD_SETTING_ANIMATION_DURATION = 300;
+const CARD_FLIPPING_ANIMATION_DURATION = 100 * 10;
 const CARD_LIFT_ANIMATION_DURATION = 200;
 const CARD_FACEDOWN_ROTATION = new THREE.Euler(Math.PI / 2, 0, 0);
 
@@ -30,7 +30,9 @@ export interface HandLayout {
 
 function extractCoordinate(coordinate: Coordinate): Coordinate {
   const { x, y, z } = coordinate;
-  return { x, y, z };
+  const obj = { x, y, z } as any;
+  Object.keys(obj).forEach(key => obj[key] === undefined && delete obj[key])
+  return obj;
 }
 
 function asAnimation(timeline: Timeline): Animation {
@@ -59,17 +61,34 @@ function asAnimation(timeline: Timeline): Animation {
   const on = ee.makeDelegate('on', animation);
   const off = ee.makeDelegate('off', animation);
 
+  timeline.on('completed', () => {
+    ee.emit('completed');
+  });
+  timeline.on('updated', () => ee.emit('updated'));
+  timeline.on('stopped', () => ee.emit('stopped'))
+
   return animation;
 }
 
-export class CardAnimator {
+export interface CardAnimatorEvents {
+  cardFlippedUp: [];
+  cardHitTable: [];
+}
+
+export class CardAnimator extends InheritableEventEmitter<CardAnimatorEvents> {
   private readonly inProgressAnimationsByCard = new Map<CardObject3d, Animation>();
 
-  public animateIntoDeck(cards: CardObject3d[], bottomCardPosition: THREE.Vector3): void {
-    cards.forEach((c, index) => this.animateCard(c, {
-      position: bottomCardPosition.clone().setY(bottomCardPosition.y + (index * 0.01)),
-      rotation: CARD_FACEDOWN_ROTATION,
-    }, CARD_DEALING_ANIMATION_DURATION));
+  public animateIntoDeck(cards: CardObject3d[], bottomCardPosition: THREE.Vector3): Animation {
+    const tweens = cards.map((c, index) => {
+      const tween = this._animate(c, {
+        position: bottomCardPosition.clone().setY(bottomCardPosition.y + (index * 0.001)),
+        rotation: CARD_FACEDOWN_ROTATION,
+      }, CARD_DEALING_ANIMATION_DURATION);
+
+      this.registerNewAnimation(c, asAnimation(tween));
+      return tween;
+    });
+    return asAnimation(Tween.group(tweens));
   }
 
   public completeAllAnimations() {
@@ -78,7 +97,7 @@ export class CardAnimator {
 
   public animateHand(cards: CardObject3d[], to: HandLayout): Animation {
     const { centerAt, spaceBetweenCardCenters, rotation } = to;
-    if (cards.length === 0) throw Error("No cards were given to animate.");
+    if (cards.length === 0) return asAnimation(Tween.get(0).to(0).with({ easing: Easings.linear, length: 0 }));
 
     const cardWidth = new THREE.Box3().setFromObject(cards[0]).getSize(new THREE.Vector3()).x;
     const firstCardLocX = centerAt.x - ((cardWidth + spaceBetweenCardCenters.x) / 2) * (cards.length - 1);
@@ -96,27 +115,43 @@ export class CardAnimator {
         ),
         rotation: rotation.clone(),
       };
-      return this._animate(card, target, CARD_DEALING_ANIMATION_DURATION);
+      const anim = this._animate(card, target, CARD_DEALING_ANIMATION_DURATION);
+      this.registerNewAnimation(card, asAnimation(anim));
+      return anim;
     });
 
     return asAnimation(Tween.group(cardTweens));
   }
 
   public playCard(card: CardObject3d, position: THREE.Vector3): Animation {
-    const startPos = card.position.clone();
 
     const liftCard = this._animate(card, {
-      position: position.clone().add(new THREE.Vector3(0, 0.7, -1)),
-    }, CARD_LIFT_ANIMATION_DURATION)
+      position: card.position.add(new THREE.Vector3(0, 0.7, -1)).clone(),
+    }, CARD_LIFT_ANIMATION_DURATION);
+
+    const setCard = this._animate(card, {
+      position,
+      rotation: {
+        x: Math.PI / 2
+      }
+    }, CARD_SETTING_ANIMATION_DURATION)
 
     const flipUp = this._animate(card, {
-      position: { y: startPos.y + CARD_WIDTH } // Not sufficient to avoid clipping with table if card is not flat.
+      position: { y: position.y + 1 }, // Not sufficient to avoid clipping with table if card is not flat.
+      rotation: {
+        x: - Math.PI / 2
+      }
     }, CARD_FLIPPING_ANIMATION_DURATION / 2);
+    flipUp.on('started', () => {
+      this.emit('cardFlippedUp');
+    });
 
-    const layDown = this._animate(card, { position: startPos }, CARD_FLIPPING_ANIMATION_DURATION / 2);
+    const layDown = this._animate(card, { position }, CARD_FLIPPING_ANIMATION_DURATION / 2);
+    layDown.on('completed', () => this.emit('cardHitTable'));
 
     const sequence = Tween.sequence()
       .append(liftCard)
+      .append(setCard)
       .append(flipUp)
       .append(layDown)
       .start();
@@ -135,17 +170,16 @@ export class CardAnimator {
   }
 
   private _animate(card: CardObject3d, props: AnimatableCardProps, durationMs: number): Tween<AnimatableCardProps> {
-    return Tween.get({
-      position: extractCoordinate(card.position),
-      rotation: extractCoordinate(card.rotation),
-    })
-      .to({
-        position: props.position ? extractCoordinate(props.position) : undefined,
-        rotation: props.rotation ? extractCoordinate(props.rotation) : undefined,
-      })
+
+    const to: AnimatableCardProps = {} as any;
+    if (props.position) to.position = extractCoordinate(props.position);
+    if (props.rotation) to.rotation = extractCoordinate(props.rotation);
+
+    return Tween.get(card)
+      .to(to as any)
       .with({
         easing: Easings.outQuad,
-        length: durationMs
+        length: durationMs,
       })
       .on('updated', ({ value }) => {
         const { position, rotation } = value;
@@ -159,6 +193,7 @@ export class CardAnimator {
   }
 
   private registerNewAnimation(card: CardObject3d, animation: Animation) {
+    animation.on('completed', () => this.inProgressAnimationsByCard.delete(card));
     const currentAnim = this.inProgressAnimationsByCard.get(card);
     currentAnim?.stop();
     this.inProgressAnimationsByCard.set(card, animation);

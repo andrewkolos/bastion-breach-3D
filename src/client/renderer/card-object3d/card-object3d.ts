@@ -3,8 +3,10 @@ import { Rank } from 'card';
 import { Suit } from 'card/suit';
 import * as THREE from 'three';
 import { Card } from 'card/card';
+import { Easings, Tween } from '@akolos/ts-tween';
 
-const MARKER_OPACITY = 0.5;
+const MARKER_OPACITY = 0.6;
+const MARKER_APPEAR_TIME = 700;
 
 export enum MatchupOutcomeMarker {
   Win,
@@ -32,7 +34,16 @@ export class CardObject3d extends Object3D {
     this.clearMatchupOutcomeMarker();
 
     const marker = createMatchupMarker(matchupOutcome);
-    marker.position.set(0, 0.02, 0);
+    marker.position.set(0, 0.0, 0.02);
+    Tween.start<number>(0, MARKER_OPACITY, {easing: Easings.outCubic, length: MARKER_APPEAR_TIME})
+      .on('updated', ({value}) => {
+        if (marker instanceof THREE.Mesh) { // circle
+          (<any>marker).material.opacity = value;
+        }
+        marker.children.forEach((c) => { // square or cross
+          (<any>c).material.opacity = value;
+        });
+      });
     this.add(marker);
     this.matchupOutcomeMarker = marker;
   }
@@ -41,6 +52,7 @@ export class CardObject3d extends Object3D {
     if (this.matchupOutcomeMarker == null) return;
     this.remove(this.matchupOutcomeMarker);
   }
+
 }
 
 export function isObject3dCardObject3d(object3d: Object3D): object3d is CardObject3d {
@@ -71,7 +83,8 @@ function createWinMarker(): THREE.Object3D {
     side: THREE.DoubleSide,
   });
   const mesh = new THREE.Mesh(geometry, material);
-  //mesh.lookAt(this.camera.position);
+  material.opacity = 0;
+  // mesh.lookAt(this.camera.position);
   return mesh;
 }
 
@@ -86,23 +99,23 @@ function createStalemateMarker(): THREE.Object3D {
   const left = new THREE.Mesh(geometry, material);
   left.position.set(-0.4, 0, 0);
   const top = left.clone();
-  top.position.set(0, 0, 0.4);
-  //top.rotation.set(0, 0, Math.PI / 2);
+  top.position.set(0, 0.4, 0);
+  top.rotation.set(0, 0, Math.PI / 2);
   const right = left.clone();
   right.position.set(0.4, 0, 0);
   const bottom = left.clone();
-  //bottom.rotation.set(0, 0, Math.PI / 2);
-  bottom.position.set(0, 0, -0.4);
+  bottom.rotation.set(0, 0, Math.PI / 2);
+  bottom.position.set(0, -0.4, -0);
 
   const cornerGeometry = new THREE.PlaneGeometry(0.2, 0.2);
   const topLeft = new THREE.Mesh(cornerGeometry, material);
-  topLeft.position.set(-0.4, 0, 0.4);
+  topLeft.position.set(-0.4, 0.4, 0);
   const topRight = topLeft.clone();
-  topRight.position.set(0.4, 0, 0.4);
+  topRight.position.set(0.4, 0.4, 0);
   const bottomRight = topLeft.clone();
-  bottomRight.position.set(0.4, 0, -0.4);
+  bottomRight.position.set(0.4, -0.4, 0);
   const bottomLeft = topLeft.clone();
-  bottomLeft.position.set(-0.4, 0, -0.4);
+  bottomLeft.position.set(-0.4, -0.4, 0);
 
   const obj = new THREE.Object3D();
   obj.add(left);

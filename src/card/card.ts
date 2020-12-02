@@ -59,11 +59,15 @@ export class Card implements CardLike {
     }, [])
   }
 
+  public static all(): Card[] {
+    return Suit.all().map(s => this.allRanksOfSuit(s)).flat();
+  }
+
   public static allRanksOfSuit(suit: Suit): Card[] {
     return Rank.all().map((r) => new Card(r, suit));
   }
 
-  public equals(o: Card) {
+  public equals(o: CardLike) {
     return this.suit === o.suit && this.rank === o.rank;
   }
 

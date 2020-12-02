@@ -44,6 +44,8 @@ function createTable(tableModel: THREE.Object3D) {
   tableModel.scale.set(4, 1, 3.2);
   tableModel.position.set(0, -1.65, 0);
   tableModel.receiveShadow = true;
+  tableModel.castShadow = true;
+  tableModel.name = 'table';
   return tableModel;
 }
 
@@ -58,5 +60,6 @@ function createGround(grassTexture: THREE.Texture) {
   mesh.rotateX(-Math.PI / 2);
   mesh.position.set(0, -1.65, 0);
   mesh.receiveShadow = true;
+  mesh.name = 'ground';
   return mesh;
 }

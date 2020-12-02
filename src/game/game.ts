@@ -94,6 +94,10 @@ export class Game extends InheritableEventEmitter<GameEvents> {
     return outcome;
   }
 
+  public isComplete() {
+    return this.cards.inHand.p1.length === 0;
+  }
+
   private advanceGameState(p1Card: Rank, p2Card: Rank) {
     const nextNeutralCard = this._cards.onBoard.neutral[this._cards.onBoard.p1.length];
 

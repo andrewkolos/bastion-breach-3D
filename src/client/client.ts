@@ -6,50 +6,76 @@ import { SuitAssignments } from './renderer/suit-assignments';
 import { loadResources } from './resources';
 import { Ui } from './ui';
 import { AudioService as audio } from './audio/audio-service';
+import { CardLike } from 'card/card-like';
 
 export class Client {
   private acceptGameInputs = false;
   private readonly ui = Ui.init();
 
-  private constructor(renderer: Renderer, private game: Game, suitAssignments: SuitAssignments) {
-    renderer.on('cardHitTable', () => Audio.playSound(SoundId.CardFlip))
+  private constructor(private readonly renderer: Renderer, private game: Game, private readonly suitAssignments: SuitAssignments) {
+    this.init();
+  }
+
+  private init() {
+    const suitAssignments = this.suitAssignments;
+
+    this.renderer.on('cardFlipping', () => Audio.playSound(SoundId.CardFlip))
       .on('dealingCards', () => this.acceptGameInputs = false)
       .on('cardsDelt', () => this.acceptGameInputs = true)
       .on('cardEntered', card => {
-        if (this.acceptGameInputs && card.suit === suitAssignments.player1 && game.cards.inHand.p1.includes(card.rank)) {
+        if (this.acceptGameInputs && isCardInP1Hand(card, this.game)) {
           document.body.style.cursor = 'pointer';
         }
       })
       .on('cardLeft', (_card, otherCardsBeingHovered) => {
-        if (!otherCardsBeingHovered) {
+        if (!otherCardsBeingHovered.some(c => isCardInP1Hand(c, this.game))) {
           document.body.style.cursor = 'default';
         }
       })
       .on('cardClicked', clickedCard => {
-        if (clickedCard.suit === suitAssignments.player1) {
-          const p2CardsInHand = game.cards.inHand.p2;
+        if (isCardInP1Hand(clickedCard, this.game)) {
+          const p2CardsInHand = this.game.cards.inHand.p2;
           const randomP2Card = p2CardsInHand[Math.floor(Math.random() * p2CardsInHand.length)];
           this.game.advance({
             p1Card: clickedCard.rank,
             p2Card: randomP2Card,
           });
+          audio.playSound(SoundId.CardPlay);
+        }
+      })
+      .on('cardFlipping', () => audio.playSound(SoundId.CardFlip))
+      .on('cardHitTable', () => {
+        const {game} = this;
+
+        audio.playSound(SoundId.CardHitTable);
+
+        this.ui.updateScore(game.score.p1, game.score.p2);
+        if (game.isComplete()) {
+          this.ui.showResultsToast(game.score.p1, game.score.p2);
         }
       });
 
     this.ui.on('playButtonClicked', () => {
       this.acceptGameInputs = true;
+      if (!audio.isMusicPlaying) audio.playMusic();
     })
       .on('rulesButtonClicked', () => {
         this.acceptGameInputs = false;
       })
       .on('resetButtonClicked', () => {
         this.game = new Game();
-        renderer.setGameToRender(game);
+        this.renderer.setGameToRender(this.game);
+        this.ui.hideResultsToast();
+        this.ui.updateScore(0, 0);
       })
       .on('volumeChanged', (value: number) => {
         audio.soundVolume = audio.musicVolume = value;
       });
     this.ui.enablePlaybutton();
+
+    function isCardInP1Hand(card: CardLike, game: Game) {
+      return card.suit === suitAssignments.player1 && game.cards.inHand.p1.includes(card.rank);
+    }
   }
 
   public static async start(suitAssignments: SuitAssignments): Promise<Client> {

@@ -64,6 +64,7 @@ function loadTable(): Promise<Object3D> {
       texture.repeat.set(24, 24);
       texture.wrapS = texture.wrapT = RepeatWrapping;
       applyTexture(object.children[0], texture);
+      object.receiveShadow = true;
       resolve(object);
     });
   });

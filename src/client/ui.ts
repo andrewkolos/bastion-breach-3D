@@ -90,7 +90,6 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
   public isRulesDialogShowing() {
     return parseFloat(this.rulesDialog.style.opacity) > 0;
   }
-
 }
 
 function show(el: HTMLElement, opacity: number = 1.0) {
@@ -112,9 +111,8 @@ function getOpacity(el: HTMLElement) {
 
 function tweenOpacity(el: HTMLElement, from: number, to: number) {
   return Tween.start(from, to, { easing: Easings.outQuad, length: 500})
-    .on('updated', ({ value }, source) => {
+    .on('updated', ({ value }) => {
       el.style.opacity = String(value);
-      console.log(source);
     });
 }
 

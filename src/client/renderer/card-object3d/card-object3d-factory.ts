@@ -28,6 +28,7 @@ export function createCardObject3dFactory(cardTextures: CardTextureResources): C
     result.castShadow = true;
     result.receiveShadow = true;
     result.rotation.x = - Math.PI / 2;
+    result.name = card.name;
 
     return new CardObject3d(result, card);
   };

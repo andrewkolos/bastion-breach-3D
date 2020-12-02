@@ -23,11 +23,16 @@ const sounds: SoundData[] = [
     volumeNormalization: 0.6,
   },
   {
-    id: SoundId.BackgroundMusic,
-    path: SOUND_DIR_PATH + 'quadproquo.mp3',
-    volumeNormalization: 0.2,
+    id: SoundId.CardHitTable,
+    path: SOUND_DIR_PATH + 'cardHitsTable.mp3',
+    volumeNormalization: 0.9,
   },
 ];
+
+const musicData = {
+  path: SOUND_DIR_PATH + 'quadproquo.mp3',
+  volumeNormalization: 0.2,
+}
 
 const soundsByIdEntries: [SoundId, SoundData][] = sounds.map(s => [s.id, s]);
 const soundsById: ReadonlyMap<SoundId, SoundData> = new Map(soundsByIdEntries);
@@ -38,7 +43,7 @@ export class AudioService {
   private static _soundVolume = INIT_SOUND_VOLUME;
   private static _isMusicPlaying = false;
 
-  private static musicAudio?: HTMLAudioElement;
+  private static musicAudio: HTMLAudioElement;
 
   private constructor() { }
 
@@ -48,6 +53,7 @@ export class AudioService {
 
   public static set musicVolume(value: number) {
     AudioService._musicVolume = value;
+    AudioService.musicAudio.volume = musicData.volumeNormalization * value;
   }
 
   public static get isMusicPlaying() {
@@ -76,14 +82,15 @@ export class AudioService {
     audio.play();
   }
 
-  public playMusic() {
+  public static playMusic() {
     AudioService.musicAudio = new Audio(MUSIC_PATH);
     AudioService.musicAudio.loop = true;
     AudioService.musicAudio.volume = AudioService._musicVolume;
     AudioService._isMusicPlaying = true;
+    AudioService.musicAudio.play();
   }
 
-  public stopMusic() {
+  public static stopMusic() {
     if (AudioService.musicAudio == null) return;
 
     AudioService.musicAudio.pause();
