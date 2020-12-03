@@ -1,14 +1,14 @@
 import * as THREE from 'three';
 import { CardObject3d } from '../card-object3d/card-object3d';
 import { Animation } from './animation';
-import { DeepPartial, Easings, Timeline, Tween } from '@akolos/ts-tween';
+import { Easings, Group, Timeline, Tween } from '@akolos/ts-tween';
 import { EventEmitter, InheritableEventEmitter } from '@akolos/event-emitter';
 import { AnimationEvents } from './animation-events';
 
 const CARD_DEALING_ANIMATION_DURATION = 500;
 const CARD_SETTING_ANIMATION_DURATION = 300;
 const CARD_FLIPPING_ANIMATION_DURATION = 200;
-const CARD_LIFT_ANIMATION_DURATION = 200;
+const CARD_LIFT_ANIMATION_DURATION = 250;
 const CARD_FACEDOWN_ROTATION = new THREE.Euler(Math.PI / 2, 0, 0);
 
 interface Coordinate {
@@ -26,13 +26,6 @@ export interface HandLayout {
   centerAt: THREE.Vector3;
   spaceBetweenCardCenters: THREE.Vector3;
   rotation: THREE.Euler;
-}
-
-function extractCoordinate(coordinate: Coordinate): Coordinate {
-  const { x, y, z } = coordinate;
-  const obj = { x, y, z } as any;
-  Object.keys(obj).forEach(key => obj[key] === undefined && delete obj[key])
-  return obj;
 }
 
 function asAnimation(timeline: Timeline): Animation {
@@ -110,8 +103,8 @@ export class CardAnimator extends InheritableEventEmitter<CardAnimatorEvents> {
       const target = {
         position: new THREE.Vector3(
           cardXPositions[index],
-          centerAt.y + spaceBetweenCardCenters.y,
-          centerAt.z + spaceBetweenCardCenters.z,
+          centerAt.y + spaceBetweenCardCenters.y * index,
+          centerAt.z + spaceBetweenCardCenters.z * index,
         ),
         rotation: rotation.clone(),
       };
@@ -137,7 +130,7 @@ export class CardAnimator extends InheritableEventEmitter<CardAnimatorEvents> {
     }, CARD_SETTING_ANIMATION_DURATION)
 
     const flipUp = this._animate(card, {
-      position: { y: position.y + 1 }, // Not sufficient to avoid clipping with table if card is not flat.
+      position: { y: position.y + 1 },
       rotation: {
         x: - Math.PI / 2
       }
@@ -161,19 +154,30 @@ export class CardAnimator extends InheritableEventEmitter<CardAnimatorEvents> {
     return sequenceAsAnimation;
   }
 
- 
-  private _animate(card: CardObject3d, props: AnimatableCardProps, durationMs: number): Tween<AnimatableCardProps> {
+  private _animate(card: CardObject3d, props: AnimatableCardProps, durationMs: number): Group<Tween<unknown>> {
 
-    const to: AnimatableCardProps = {} as any;
-    if (props.position) to.position = extractCoordinate(props.position);
-    if (props.rotation) to.rotation = extractCoordinate(props.rotation);
+    const tweens: Array<Tween<unknown>> = [];
 
-    return Tween.get(card)
-      .to(to as DeepPartial<CardObject3d>)
+    if (props.rotation)
+    {
+      tweens.push(Tween.get(card)
+        .to({ rotation: extractCoordinate(props.rotation) })
+        .with({
+          easing: Easings.outQuad,
+          length: durationMs * 0.8,
+        }));
+    }
+    if (props.position)
+    {
+      const tween = Tween.get(card)
+      .to({position: extractCoordinate(props.position)})
       .with({
         easing: Easings.outQuad,
         length: durationMs,
       });
+      tweens.push(tween);
+    }
+    return Tween.group(tweens);
   }
 
   private registerNewAnimation(card: CardObject3d, animation: Animation) {
@@ -182,6 +186,13 @@ export class CardAnimator extends InheritableEventEmitter<CardAnimatorEvents> {
     currentAnim?.stop();
     this.inProgressAnimationsByCard.set(card, animation);
   }
+}
+
+function extractCoordinate(coordinate: Coordinate): Coordinate {
+  const { x, y, z } = coordinate;
+  const obj = { x, y, z } as any;
+  Object.keys(obj).forEach(key => obj[key] === undefined && delete obj[key])
+  return obj;
 }
 
 function range(n: number): number[] {

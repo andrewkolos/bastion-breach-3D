@@ -101,9 +101,9 @@ function show(el: HTMLElement, opacity: number = 1.0) {
 }
 
 function hide(el: HTMLElement) {
-  const current = getOpacity(el);
-  tweenOpacity(el, current, 0).on('completed', () => el.style.display = 'none');
-
+  const opacity = getOpacity(el);
+  if (opacity === 0) return;
+  tweenOpacity(el, opacity, 0).on('completed', () => el.style.display = 'none');
 } 
 
 function getOpacity(el: HTMLElement) {

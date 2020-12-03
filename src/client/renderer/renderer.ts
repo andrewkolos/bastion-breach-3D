@@ -55,7 +55,6 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
     this.cards.all.forEach(c => this.scene.add(c));
 
     this.camera = new THREE.PerspectiveCamera(CAMERA_FOV, window.innerWidth / window.innerHeight, 0.1, 40);
-    // TODO: Calculate a good position to place camera instead of using magic numbers.
     this.camera.position.set(0, 5.6, 4);
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 

@@ -20,9 +20,6 @@ export class CardObject3d extends Object3D {
   public readonly suit: Suit;
   private matchupOutcomeMarker?: Object3D;
 
-  /**
-   * @internal 
-   */
   public constructor(baseObject3d: Object3D, card: Card) {
     super();
     this.copy(baseObject3d as any);
@@ -37,11 +34,11 @@ export class CardObject3d extends Object3D {
     marker.position.set(0, 0.0, 0.02);
     Tween.start<number>(0, MARKER_OPACITY, {easing: Easings.outCubic, length: MARKER_APPEAR_TIME})
       .on('updated', ({value}) => {
-        if (marker instanceof THREE.Mesh) { // circle
-          (<any>marker).material.opacity = value;
-        }
-        marker.children.forEach((c) => { // square or cross
-          (<any>c).material.opacity = value;
+        marker.traverse(o => {
+          if (o instanceof THREE.Mesh) {
+            const materials: THREE.Material[] = arraify(o.material);
+            materials.forEach(m => m.opacity = value);
+          }
         });
       });
     this.add(marker);
@@ -84,7 +81,7 @@ function createWinMarker(): THREE.Object3D {
   });
   const mesh = new THREE.Mesh(geometry, material);
   material.opacity = 0;
-  // mesh.lookAt(this.camera.position);
+
   return mesh;
 }
 
@@ -126,7 +123,6 @@ function createStalemateMarker(): THREE.Object3D {
   obj.add(topRight);
   obj.add(bottomRight);
   obj.add(bottomLeft);
-  // obj.lookAt(this.camera.position);
   obj.scale.set(0.9, 0.9, 0.9);
 
   return obj;
@@ -149,4 +145,8 @@ function createLossMarker(): THREE.Object3D {
   obj.add(backslashMesh);
   obj.add(forwardslashMesh);
   return obj;
+}
+
+function arraify<T>(value: T | T[]): T[] {
+  return Array.isArray(value) ? value : [value];
 }

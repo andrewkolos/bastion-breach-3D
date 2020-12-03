@@ -45,6 +45,9 @@ function createTable(tableModel: THREE.Object3D) {
   tableModel.position.set(0, -1.65, 0);
   tableModel.receiveShadow = true;
   tableModel.castShadow = true;
+  tableModel.traverse(obj => {
+    obj.receiveShadow = true;
+  })
   tableModel.name = 'table';
   return tableModel;
 }

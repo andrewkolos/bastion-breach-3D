@@ -30,7 +30,7 @@ const sounds: SoundData[] = [
 
 const musicData = {
   path: SOUND_DIR_PATH + 'quadproquo.mp3',
-  volumeNormalization: 0.15,
+  volumeNormalization: 0.05,
 }
 
 const soundsByIdEntries: [SoundId, SoundData][] = sounds.map(s => [s.id, s]);

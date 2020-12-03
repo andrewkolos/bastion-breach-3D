@@ -5,11 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --verbose",
-    "test:watch": "jest --watch",
-    "test:debug": "node --inspect-brk=0.0.0.0 node_modules/jest/bin/jest.js --runInBand --config jest.config.js",
-    "dev": "webpack serve --open Chrome.exe",
-    "build": "tsc --noEmit && parcel src/index.html",
-    "start": "http-server dist"
+    "start": "tsc --noEmit && parcel src/index.html"
   },
   "author": "",
   "license": "ISC",
@@ -42,7 +38,7 @@
   "dependencies": {
     "@akolos/clone-dumb-object": "0.0.1",
     "@akolos/event-emitter": "^2.0.4",
-    "@akolos/ts-tween": "^1.0.4",
+    "@akolos/ts-tween": "^1.0.6",
     "bluebird": "^3.7.2",
     "clean-webpack-plugin": "^3.0.0",
     "eslint-config-prettier": "^6.11.0",
