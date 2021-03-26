@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --verbose",
-    "start": "tsc --noEmit && parcel src/index.html"
+    "start": "tsc --noEmit && cp -ru src/assets dist && parcel src/index.html"
   },
   "author": "",
   "license": "ISC",
