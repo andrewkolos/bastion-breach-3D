@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CardTextureResources } from '../../../client/resources';
+import { CardTextureResources } from '../../resources/resources';
 import { Card, CardAbbreviation } from '../../../card/card';
 import { CardObject3d } from './card-object3d';
 

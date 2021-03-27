@@ -1,9 +1,9 @@
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Bastion Breach</title>
     <style type="text/css">
-
         body {
             font-family: Verdana, Arial, sans-serif;
             background-color: black;
@@ -40,7 +40,8 @@
 
         #score {
             background-color: rgba(0, 0, 0, 0.5);
-            position: absolute;;
+            position: absolute;
+            ;
             top: 0;
             left: 0;
             border-radius: 0 5px 5px 5px;
@@ -51,10 +52,14 @@
         }
 
         .noSelect {
-            -webkit-user-select: none; /* Safari */
-            -moz-user-select: none; /* Firefox */
-            -ms-user-select: none; /* IE10+/Edge */
-            user-select: none; /* Standard */
+            -webkit-user-select: none;
+            /* Safari */
+            -moz-user-select: none;
+            /* Firefox */
+            -ms-user-select: none;
+            /* IE10+/Edge */
+            user-select: none;
+            /* Standard */
         }
 
         #modal {
@@ -88,13 +93,13 @@
             cursor: pointer;
         }
 
-        #clickToPlay {
+        #playButton {
             padding: 10px;
-            display: inline-block;
             text-align: center;
             font-size: 1.4em;
             border-radius: 10px;
-            min-width: 200px;
+            border: 1px solid white;
+            margin: 0 auto;
         }
 
         .whiteBorder {
@@ -115,58 +120,70 @@
             text-align: center;
             font-size: 1.5em;
         }
+
+        #playButtonSecondaryText {
+            font-size: 0.50em;
+        }
     </style>
 
     <link rel="stylesheet" href="../node_modules/nouislider/distribute/nouislider.min.css" />
 </head>
+
 <body style="margin: 0" class="noSelect">
 
-<script src="./index.ts"></script>
+    <script src="./index.ts"></script>
 
-<div id="score">
-    Player: 0 &nbsp; Computer: 0
-</div>
+    <div id="score">
+        Player: 0 &nbsp; Computer: 0
+    </div>
 
-<div id="modal">
-    <div class="heading">
-        <h1 style="margin:0; font-family: 'Arial Black', Gadget, sans-serif">Bastion Breach</h1>
-        <h4 style="margin:0">Made by Andrew Kolos</h4>
+    <div id="modal">
+        <div class="heading">
+            <h1 style="margin:0; font-family: 'Arial Black', Gadget, sans-serif">Bastion Breach</h1>
+            <h4 style="margin:0">Made by Andrew Kolos</h4>
+        </div>
+        <div class="body">
+            <p>You and the computer will play a round for each card in the middle, starting with the leftmost card.</p>
+            <p>Click on a card in your hand to play it against the middle card and the card the computer plays.</p>
+            <p>The highest ranked card of the three wins the round, getting the winner a point.</p>
+            <p>The ace is special—it beats any face card but loses to any number.</p>
+            <p>If neither of the player cards beats the other two cards, then the round ends in a <span
+                    style="color: dodgerblue">stalemate</span>. <em>However, the next
+                    round will be worth an additional point</em> (these can add up). For example, if there are three
+                <span style="color: dodgerblue">stalemates</span> in a row,
+                the next round is worth 4 points.
+            </p>
+            <p><span style="color: lawngreen">Player wins</span> are denoted with <span style="color: lawngreen">green
+                    circles</span>, <span style="color: red">computer wins</span> with <span style="color: red">red
+                    crosses</span>, and <span style="color: dodgerblue">stalemates</span> with <span
+                    style="color: dodgerblue">blue squares</span>.
+            </p>
+        </div>
+        <div style="text-align: center">
+            <div id="playButton">
+                <div id="playButtonPrimaryText">Loading...</div>
+                <div id="playButtonSecondaryText"></div>
+            </div>
+        </div>
+
     </div>
-    <div class="body">
-        <p>You and the computer will play a round for each card in the middle, starting with the leftmost card.</p>
-        <p>Click on a card in your hand to play it against the middle card and the card the computer plays.</p>
-        <p>The highest ranked card of the three wins the round, getting the winner a point.</p>
-        <p>The ace is special—it beats any face card but loses to any number.</p>
-        <p>If neither of the player cards beats the other two cards, then the round ends in a <span style="color: dodgerblue">stalemate</span>. <em>However, the next
-            round will be worth an additional point</em> (these can add up). For example, if there are three <span style="color: dodgerblue">stalemates</span> in a row,
-            the next round is worth 4 points.</p>
-        <p><span style="color: lawngreen">Player wins</span> are denoted with <span style="color: lawngreen">green circles</span>, <span style="color: red">computer wins</span> with <span
-                style="color: red">red crosses</span>, and <span style="color: dodgerblue">stalemates</span> with <span style="color: dodgerblue">blue squares</span>.
-        </p>
-    </div>
-    <div style="text-align: center">
-        <div id="clickToPlay">
-            Loading...
+    <div id="cornerui" class="noSelect">
+        <div id="volumeSliderWrapper" class="item">
+            <img style="margin-right: 10px; width: 25px; height: 25px; transform: translateY(5px)"
+                src="assets/images/vol-white.png" />
+            <div id="volumeSlider" class="noUiSlider"></div>
+            <div id="volume" style="margin-left: 12px; width:20px">50</div>
+        </div>
+        <div id="resetButton" class="item button">
+            Reset
+        </div>
+        <div id="showRules" class="item button">
+            Rules
         </div>
     </div>
+    <div id="message" class="noSelect">
 
-</div>
-<div id="cornerui" class="noSelect">
-    <div id="volumeSliderWrapper" class="item">
-        <img style="margin-right: 10px; width: 25px; height: 25px; transform: translateY(5px)"
-             src="assets/images/vol-white.png"/>
-        <div id="volumeSlider" class="noUiSlider"></div>
-        <div id="volume" style="margin-left: 12px; width:20px">50</div>
     </div>
-    <div id="resetButton" class="item button">
-        Reset
-    </div>
-    <div id="showRules" class="item button">
-        Rules
-    </div>
-</div>
-<div id="message" class="noSelect">
-
-</div>
 </body>
+
 </html>

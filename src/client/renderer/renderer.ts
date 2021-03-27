@@ -6,7 +6,7 @@ import { Suit } from '../../card/suit';
 import { CardAnimator } from '../../client/renderer/animation/card-animator';
 import { Game, MatchupWinner } from '../../game';
 import { Matchup } from '../../game/matchup';
-import { CardTextureResources, Resources } from '../resources';
+import { CardTextureResources, Resources } from '../resources/resources';
 import { CardObject3d, MatchupOutcomeMarker } from './card-object3d/card-object3d';
 import { createCardObject3dFactory } from './card-object3d/card-object3d-factory';
 import { createScene } from './create-scene';
@@ -27,6 +27,7 @@ export interface RendererEvents {
 const CAMERA_FOV = 70;
 
 export class Renderer extends InheritableEventEmitter<RendererEvents> {
+
   private readonly camera: THREE.PerspectiveCamera;
   private readonly scene: THREE.Scene;
   private readonly webGlRenderer: THREE.WebGLRenderer;

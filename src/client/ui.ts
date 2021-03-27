@@ -11,13 +11,16 @@ interface UiEvents {
 
 export class Ui extends InheritableEventEmitter<UiEvents> {
   private readonly rulesDialog = el('modal');
-  private readonly playButton = el('clickToPlay');
   private readonly resetButton = el('resetButton');
   private readonly showRulesButton = el('showRules');
   private readonly scoreBoard = el('score');
   private readonly resultsToast = el('message');
   private readonly volumeSlider = el('volumeSlider');
   private readonly volumeValueDisplay = el('volume');
+
+  private readonly playButton = el('playButton');
+  private readonly playButtonPrimaryText = el('playButtonPrimaryText');
+  private readonly playButtonSecondaryText = el('playButtonSecondaryText');
 
   private isPlayButtonActive = false;
 
@@ -26,6 +29,7 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
 
     this.resetButton.addEventListener('click', () => this.emit('resetButtonClicked'));
     this.showRulesButton.addEventListener('click', () => {
+      this.playButtonSecondaryText.style.display = 'none';
       show(this.rulesDialog);
       this.emit('rulesButtonClicked');
     });
@@ -60,15 +64,18 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
   }
 
   public enablePlaybutton() {
-    this.playButton.classList.add('whiteBorder');
-    this.playButton.innerHTML = 'Play';
+    this.playButtonPrimaryText.innerHTML = 'Click Here To Play';
+    this.playButtonSecondaryText.style.display = 'none';
     this.playButton.style.cursor = 'pointer';
     this.isPlayButtonActive = true;
   }
 
-  public showRulesDialog() {
-    show(this.rulesDialog);
-  };
+  public updateLoadingStatus(progress: number, status: string = '') {
+    const formatted = (progress * 100).toPrecision(3);
+    this.playButton.style.background = `linear-gradient(to right, green ${formatted}%, black, ${formatted}%, black ${100-Number(formatted)}%)`;
+    this.playButtonPrimaryText.innerHTML = formatted + '%';
+    this.playButtonSecondaryText.innerHTML = status;
+  }
 
   public isRulesDialogShowing(): boolean {
     const opacity = this.rulesDialog.style.opacity;

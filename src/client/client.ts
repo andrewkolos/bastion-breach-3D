@@ -2,24 +2,41 @@ import { Game } from '../game';
 import { SoundId } from './audio/sound-id';
 import { Renderer } from './renderer/renderer';
 import { SuitAssignments } from './renderer/suit-assignments';
-import { loadResources } from './resources';
 import { Ui } from './ui';
 import { AudioService as audio } from './audio/audio-service';
 import { CardLike } from 'card/card-like';
+import { RendererLoader } from './renderer/renderer-loader';
 
 export class Client {
   private acceptGameInputs = false;
   private readonly ui = Ui.init();
   private lastCardSoundTime = new Date().getTime();
+  private rendererPromise: Promise<Renderer>;
 
-  private constructor(private readonly renderer: Renderer, private game: Game, private readonly suitAssignments: SuitAssignments) {
-    this.init();
+  private constructor(private game: Game, private readonly suitAssignments: SuitAssignments) {
+    this.rendererPromise = RendererLoader.load(this.game, suitAssignments);
+    this.rendererPromise.then((renderer) => {
+      this.setUpRenderer(renderer);
+      this.enableUi(renderer);
+    });
+
+    RendererLoader.on('progressed', (progress, status) => {
+      this.ui.updateLoadingStatus(progress, status);
+    })
+      .on('completed', () => {
+        this.ui.enablePlaybutton();
+      });
   }
 
-  private init() {
+  public async getDomElement(): Promise<HTMLElement> {
+    const renderer = await this.rendererPromise;
+    return renderer.domElement;
+  }
+
+  private setUpRenderer(renderer: Renderer) {
     const suitAssignments = this.suitAssignments;
 
-    this.renderer
+    renderer
       .on('dealingCards', () => this.acceptGameInputs = false)
       .on('cardsDelt', () => this.acceptGameInputs = true)
       .on('cardEntered', card => {
@@ -55,6 +72,14 @@ export class Client {
         }
       });
 
+    renderer.start();
+
+    function isCardInP1Hand(card: CardLike, game: Game) {
+      return card.suit === suitAssignments.player1 && game.cards.inHand.p1.includes(card.rank);
+    }
+  }
+
+  private enableUi(renderer: Renderer) {
     this.ui.on('playButtonClicked', () => {
       this.acceptGameInputs = true;
       if (!audio.isMusicPlaying) audio.playMusic();
@@ -64,18 +89,13 @@ export class Client {
       })
       .on('resetButtonClicked', () => {
         this.game = new Game();
-        this.renderer.setGameToRender(this.game);
+        renderer.setGameToRender(this.game);
         this.ui.hideResultsToast();
         this.ui.updateScore(0, 0);
       })
       .on('volumeChanged', (value: number) => {
         audio.soundVolume = audio.musicVolume = value;
       });
-    this.ui.enablePlaybutton();
-
-    function isCardInP1Hand(card: CardLike, game: Game) {
-      return card.suit === suitAssignments.player1 && game.cards.inHand.p1.includes(card.rank);
-    }
   }
 
   private playCardSound(soundId: SoundId.CardFlip | SoundId.CardHitTable) {
@@ -90,10 +110,9 @@ export class Client {
 
   public static async start(suitAssignments: SuitAssignments): Promise<Client> {
     const game = new Game();
-    const resources = await loadResources();
-    const renderer = new Renderer(resources, game, suitAssignments);
-    document.body.appendChild(renderer.domElement);
-    renderer.start();
-    return new Client(renderer, game, suitAssignments);
+    const client = new Client(game, suitAssignments);
+    const domElement = await client.getDomElement();
+    document.body.appendChild(domElement);
+    return client;
   }
 }
