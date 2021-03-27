@@ -22,11 +22,36 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
   private readonly playButtonPrimaryText = el('playButtonPrimaryText');
   private readonly playButtonSecondaryText = el('playButtonSecondaryText');
 
+  // Consider refactoring loading bar stuff into its own component.
+  private loadingProgressBarUpdater = () => {
+    if (this.loadingTween) {
+      this.loadingTween?.stop();
+    }
+
+    this.loadingTween = Tween
+      .get(this.loadingBarProgress)
+      .to(this.loadingProgress)
+      .with({
+        easing: Easings.outQuad,
+        length: 150
+      })
+      .on('updated', ({value}) => {
+        this.loadingBarProgress = value;
+        const formatted = (value * 100).toPrecision(4);
+        this.playButton.style.background =
+          `linear-gradient(to right, green ${formatted}%, black, ${formatted}%, black ${100 - Number(formatted)}%)`;
+      });
+  }
+
+  private loadingTween?: Tween<unknown>;
+  private loadingBarProgress = 0;
+  private loadingProgress = 0;
+
   private isPlayButtonActive = false;
 
   private constructor() {
     super();
-
+  
     this.resetButton.addEventListener('click', () => this.emit('resetButtonClicked'));
     this.showRulesButton.addEventListener('click', () => {
       this.playButtonSecondaryText.style.display = 'none';
@@ -71,8 +96,9 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
   }
 
   public updateLoadingStatus(progress: number, status: string = '') {
+    requestAnimationFrame(() => this.loadingProgressBarUpdater());
     const formatted = (progress * 100).toPrecision(3);
-    this.playButton.style.background = `linear-gradient(to right, green ${formatted}%, black, ${formatted}%, black ${100-Number(formatted)}%)`;
+    this.loadingProgress = progress;
     this.playButtonPrimaryText.innerHTML = formatted + '%';
     this.playButtonSecondaryText.innerHTML = status;
   }
@@ -98,7 +124,7 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
   public hideResultsToast() {
     hide(this.resultsToast);
   }
-  
+
 }
 
 function show(el: HTMLElement, opacity: number = 1.0) {
@@ -111,7 +137,7 @@ function hide(el: HTMLElement) {
   const opacity = getOpacity(el);
   if (opacity === 0) return;
   tweenOpacity(el, opacity, 0).on('completed', () => el.style.display = 'none');
-} 
+}
 
 function getOpacity(el: HTMLElement) {
   const v = el.style.opacity;
@@ -119,7 +145,7 @@ function getOpacity(el: HTMLElement) {
 }
 
 function tweenOpacity(el: HTMLElement, from: number, to: number) {
-  return Tween.start(from, to, { easing: Easings.outQuad, length: 500})
+  return Tween.start(from, to, { easing: Easings.outQuad, length: 500 })
     .on('updated', ({ value }) => {
       el.style.opacity = String(value);
     });

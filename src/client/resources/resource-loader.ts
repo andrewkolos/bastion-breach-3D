@@ -27,11 +27,9 @@ export class ResourceLoader {
     if (this.resources) return this.resources;
 
     loadingManager.onProgress = (url, loaded, total) => {
-      console.log('starting a load!', url, loaded, total);
       this.ee.emit('loadingFile', url, loaded, total);
     };
     loadingManager.onLoad = () => {
-      console.log('loaded!');
       this.ee.emit('completed');
     };
     

@@ -24,6 +24,7 @@ export class Client {
       this.ui.updateLoadingStatus(progress, status);
     })
       .on('completed', () => {
+        this.ui.updateLoadingStatus(1);
         this.ui.enablePlaybutton();
       });
   }
