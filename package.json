@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --verbose",
-    "start": "npm run build && parcel src/index.html",
-    "build": "tsc --noEmit && parcel build src/index.html && cp -ru src/assets/ dist",
-    "dev": "npm run build && parcel —no-minify src/index.html"
+    "start": "http-server ./dist -g",
+    "build": "tsc --noEmit && parcel build --no-source-maps src/index.html && cp -ru src/assets/. dist",
+    "dev": "tsc --noEmit && parcel —no-minify src/index.html"
   },
   "author": "",
   "license": "ISC",
