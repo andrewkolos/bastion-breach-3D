@@ -3,7 +3,7 @@ import { Rank } from '../card/rank';
 import { cloneDumbObject } from '@akolos/clone-dumb-object';
 import { MatchupWinner } from './matchup-winner';
 import { GameAdvancementOutcome } from './game-advancement-outcome';
-import { Player } from './Player';
+import { Player } from './player';
 import { GameCardCollection } from './game-card-collection';
 import { InheritableEventEmitter } from '@akolos/event-emitter';
 import { Matchup } from './matchup';
