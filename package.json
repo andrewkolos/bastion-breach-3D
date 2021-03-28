@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest --verbose",
     "start": "npm run build && parcel src/index.html",
-    "build": "tsc --noEmit && cp -ru src/assets dist",
+    "build": "tsc --noEmit && parcel build src/index.html && cp -ru src/assets/ dist",
     "dev": "npm run build && parcel —no-minify src/index.html"
   },
   "author": "",
