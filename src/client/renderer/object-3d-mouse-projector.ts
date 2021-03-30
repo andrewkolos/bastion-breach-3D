@@ -63,10 +63,14 @@ export class Object3dMouseProjector<T extends THREE.Object3D = THREE.Object3D>
     const intersections = raycaster.intersectObjects(this.objects as T[], true);
     return intersections.map(i => {
       const obj = i.object;
-      if (this.objects.includes(obj as T)) return obj as unknown as  T;
+      if (this.objects.includes(obj as T)) {
+        return obj as unknown as  T;
+      }
       let parent = obj.parent;
       while (parent != null) {
-        if (this.objects.includes(parent as T)) return obj.parent as unknown as T;
+        if (this.objects.includes(parent as T)) {
+          return obj.parent as unknown as T;
+        }
         parent = parent.parent;
       }
       throw Error();

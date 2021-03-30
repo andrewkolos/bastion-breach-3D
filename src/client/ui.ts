@@ -93,6 +93,7 @@ export class Ui extends InheritableEventEmitter<UiEvents> {
     this.playButtonSecondaryText.style.display = 'none';
     this.playButton.style.cursor = 'pointer';
     this.isPlayButtonActive = true;
+    this.playButton.classList.add('playButtonReady');
   }
 
   public updateLoadingStatus(progress: number, status: string = '') {

@@ -127,6 +127,10 @@
         #playButtonSecondaryText {
             font-size: 0.50em;
         }
+
+        .playButtonReady:active {
+            transform: translateY(1px);
+        }
     </style>
 
     <link rel="stylesheet" href="../node_modules/nouislider/distribute/nouislider.min.css" />
@@ -163,7 +167,7 @@
             </p>
         </div>
         <div style="text-align: center">
-            <div id="playButton">
+            <div id="playButton" role="button">
                 <div id="playButtonPrimaryText">Loading...</div>
                 <div id="playButtonSecondaryText"></div>
             </div>
