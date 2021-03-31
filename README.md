@@ -7,7 +7,10 @@ A 3D card game that runs in the browser. Made using Three.js.
 
 ## Play
 
-[Play here](https://bastion-breach-3d.herokuapp.com/index.html) (please allow time for the server to rehydrate)
+[Play here](https://www.andrewkolos.com/demos/bastion-breach-3d) 
+
+[Try this link if the above doesn't work](https://bastion-breach-3d.herokuapp.com/index.html) (please allow time for the server to rehydrate)
+
 
 or, run the game locally:
 
