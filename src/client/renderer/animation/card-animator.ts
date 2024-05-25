@@ -64,8 +64,8 @@ function asAnimation(timeline: Timeline): Animation {
 }
 
 export interface CardAnimatorEvents {
-  cardFlippedUp: [];
-  cardHitTable: [];
+  cardFlippedUp: () => void;
+  cardHitTable: () => void;
 }
 
 export class CardAnimator extends InheritableEventEmitter<CardAnimatorEvents> {

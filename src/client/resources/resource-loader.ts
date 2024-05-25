@@ -6,9 +6,9 @@ import { objectPromiseAll } from '../../util/object-promise-all';
 import { Resources } from './resources';
 
 export interface ResourceLoaderEvents {
-  starting: [];
-  completed: [];
-  loadingFile: [url: string, itemsLoaded: number, totalItems: number];
+  starting: () => void;
+  completed: () => void;
+  loadingFile: (url: string, itemsLoaded: number, totalItems: number) => void;
 }
 
 const IMAGE_DIR_PATH = 'images/';

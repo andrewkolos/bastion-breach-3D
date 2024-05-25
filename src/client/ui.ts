@@ -3,10 +3,10 @@ import { Easings, Tween } from '@akolos/ts-tween';
 import noUiSlider from 'nouislider';
 
 interface UiEvents {
-  playButtonClicked: [],
-  rulesButtonClicked: [],
-  resetButtonClicked: [],
-  volumeChanged: [value: number],
+  playButtonClicked: () => void,
+  rulesButtonClicked: () => void,
+  resetButtonClicked: () => void,
+  volumeChanged: (value: number) => void,
 }
 
 export class Ui extends InheritableEventEmitter<UiEvents> {

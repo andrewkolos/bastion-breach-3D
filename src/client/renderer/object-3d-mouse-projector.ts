@@ -3,9 +3,9 @@ import * as THREE from 'three';
 
 const raycaster = new THREE.Raycaster();
 export interface Object3dMouseProjectorEvents<T extends THREE.Object3D> {
-  objectsEntered: [objects: T[]];
-  objectsLeft: [objects: T[]];
-  objectsClicked: [objects: T[]];
+  objectsEntered: (objects: T[]) => void;
+  objectsLeft: (objects: T[]) => void;
+  objectsClicked: (objects: T[]) => void;
 }
 
 export class Object3dMouseProjector<T extends THREE.Object3D = THREE.Object3D>

@@ -22,7 +22,7 @@ export interface GameConfig {
 }
 
 export interface GameEvents {
-  advanced: [p1Card: Rank, p2Card: Rank, outcome: GameAdvancementOutcome];
+  advanced: (p1Card: Rank, p2Card: Rank, outcome: GameAdvancementOutcome) => void;
 }
 
 export class Game extends InheritableEventEmitter<GameEvents> {

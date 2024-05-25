@@ -15,13 +15,13 @@ import { Object3dMouseProjector } from './object-3d-mouse-projector';
 import { SuitAssignments } from './suit-assignments';
 
 export interface RendererEvents {
-  dealingCards: [];
-  cardsDelt: [];
-  cardEntered: [card: Card];
-  cardLeft: [left: Card, currentlyHovered: Card[]];
-  cardClicked: [card: Card];
-  cardFlipping: [];
-  cardHitTable: [];
+  dealingCards: () => void;
+  cardsDelt: () => void;
+  cardEntered: (card: Card) => void;
+  cardLeft: (left: Card, currentlyHovered: Card[]) => void;
+  cardClicked: (card: Card) => void;
+  cardFlipping: () => void;
+  cardHitTable: () => void;
 }
 
 const CAMERA_FOV = 70;
@@ -70,7 +70,6 @@ export class Renderer extends InheritableEventEmitter<RendererEvents> {
       this.emit('cardEntered', new Card(objects[0]));
     });
     cardMouseProjector.on('objectsLeft', objects => {
-      cardMouseProjector
       this.emit('cardLeft', new Card(objects[0]), cardMouseProjector.getHoveredObjects().map((cobj => new Card(cobj))));
     });
     this.cardMouseProjector = cardMouseProjector;

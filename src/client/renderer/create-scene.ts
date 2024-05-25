@@ -21,6 +21,7 @@ function createLights(): THREE.Light[] {
   dirLight1.shadow.camera.bottom = -6;
   dirLight1.shadow.mapSize.width = 1024;
   dirLight1.shadow.mapSize.height = 1024;
+  dirLight1.name = 'dirLight1';
   const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.3);
   dirLight2.position.set(7, 30, -15);
   dirLight2.castShadow = true; // expensive
@@ -32,11 +33,14 @@ function createLights(): THREE.Light[] {
   dirLight2.shadow.camera.bottom = -6;
   dirLight2.shadow.mapSize.width = 1024;
   dirLight2.shadow.mapSize.height = 1024;
+  dirLight2.name = 'dirLight2';
   const hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.3);
   hemiLight.color.setHSL(0.6, 1, 0.6);
   hemiLight.groundColor.setHSL(0.095, 1, 0.75);
   hemiLight.position.set(0, 10, 0);
+  hemiLight.name = 'hemiLight';
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
+  ambientLight.name = 'ambientLight';
   return [dirLight1, dirLight2, hemiLight, ambientLight];
 }
 

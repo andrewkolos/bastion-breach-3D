@@ -5,8 +5,8 @@ import { Renderer } from './renderer';
 import { SuitAssignments } from './suit-assignments';
 
 export interface RendererLoaderEvents {
-  progressed: [progress: number, status: string];
-  completed: [];
+  progressed: (progress: number, status: string) => void;
+  completed: () => void;
 }
 
 
