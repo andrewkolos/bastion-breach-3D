@@ -1,4 +1,5 @@
 # bastion-breach-3D
+
 A 3D card game that runs in the browser. Made using Three.js.
 
 ![Start game](https://i.imgur.com/RoaxhIi.png)
@@ -7,14 +8,11 @@ A 3D card game that runs in the browser. Made using Three.js.
 
 ## Play
 
-[Play here](https://www.andrewkolos.com/demos/bastion-breach-3d) 
+[Play here](https://www.andrewkolos.com/demos/bastion-breach-3d)
 
-[Try this link if the above doesn't work](https://bastion-breach-3d.herokuapp.com/index.html) (please allow time for the server to rehydrate)
+or, run the game locally (using Node 8):
 
-
-or, run the game locally:
-
-```
+```bash
 npm i
 npm run start
 ```
